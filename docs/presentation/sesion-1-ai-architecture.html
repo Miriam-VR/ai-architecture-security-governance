@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sesión 1 · AI Architecture · Datapath</title>
+<meta name="description" content="AI Architecture, Security & Governance · Sesión 1: endpoint con LLM intercambiable, RAG, herramientas MCP, grafo con memoria y despliegue en Lambda y EC2.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#161719; --panel:#1D1F22; --panel2:#242629; --deep:#101113;
+  --line:#2E3136; --line2:#3A3E44;
+  --ink:#F4F5F6; --body:#C4C8CE; --muted:#878C94;
+  --coral:#FF7A50; --coral-d:#E2603A; --coral-t:rgba(255,122,80,.13);
+  --mint:#6FD3C7; --amber:#F0B85C; --rose:#F0776E;
+  --disp:"Outfit",system-ui,sans-serif;
+  --sans:"Inter",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --rail:272px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--body);font-family:var(--sans);font-size:15.5px;line-height:1.72;-webkit-font-smoothing:antialiased}
+::selection{background:var(--coral);color:#141517}
+a{color:var(--coral)}
+
+/* ---------- estructura ---------- */
+.shell{display:flex;min-height:100vh}
+.rail{width:var(--rail);flex:0 0 var(--rail);background:var(--deep);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.mark{padding:26px 24px 20px;border-bottom:1px solid var(--line)}
+.mark .logo{display:flex;align-items:center;gap:9px;margin-bottom:18px}
+.mark .logo svg{display:block}
+.mark .logo span{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);letter-spacing:-.02em}
+.mark .course{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);margin:0 0 8px}
+.mark h1{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);line-height:1.3;margin:0 0 6px;letter-spacing:-.01em}
+.mark p{font-size:12.5px;color:var(--muted);margin:0}
+.toc{padding:14px 0 50px}
+.toc .grp{font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;color:#5D626A;padding:18px 24px 8px}
+.toc a{display:flex;gap:12px;align-items:baseline;padding:7px 24px;color:var(--body);text-decoration:none;font-size:13.6px;line-height:1.4;border-left:2px solid transparent;transition:color .18s,background .18s,border-color .18s}
+.toc a:hover{background:#191A1D;color:var(--ink)}
+.toc a .n{font-family:var(--mono);font-size:10.5px;color:#5D626A;flex:0 0 20px;transition:color .18s}
+.toc a.on{color:var(--ink);border-left-color:var(--coral);background:linear-gradient(90deg,var(--coral-t),transparent)}
+.toc a.on .n{color:var(--coral)}
+
+.stage{flex:1;min-width:0}
+.bar{position:sticky;top:0;z-index:30;background:rgba(22,23,25,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:11px 44px}
+.bar .where{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .go{border:1px solid var(--line2);background:transparent;color:var(--body);font-family:var(--sans);font-size:12.5px;font-weight:500;border-radius:7px;padding:7px 13px;cursor:pointer;transition:all .18s}
+.bar .go:hover{border-color:var(--coral);color:var(--coral)}
+.bar .rule{position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--coral)}
+.menu{display:none}
+.page{max-width:1040px;margin:0 auto;padding:0 44px 160px}
+
+/* ---------- portada ---------- */
+.cover{position:relative;overflow:hidden;background:#0E0F11;border-radius:22px;margin:26px 0 12px;padding:56px 46px 52px;border:1px solid var(--line)}
+.cover .stripes{position:absolute;inset:0;pointer-events:none}
+.cover .stripes i{position:absolute;right:-14%;height:44px;width:62%;transform:skewX(-24deg);border-radius:3px}
+.cover .stripes i:nth-child(1){top:34px;background:var(--coral)}
+.cover .stripes i:nth-child(2){top:104px;background:#2C2F34}
+.cover .stripes i:nth-child(3){top:174px;background:var(--coral);opacity:.85}
+.cover .stripes i:nth-child(4){top:244px;background:#2C2F34}
+.cover .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);margin:0 0 18px;position:relative}
+.cover h2{font-family:var(--disp);font-size:52px;font-weight:700;color:var(--ink);line-height:1.04;letter-spacing:-.035em;margin:0 0 20px;max-width:13ch;position:relative}
+.cover .sub{font-size:17px;color:var(--body);max-width:50ch;margin:0 0 28px;position:relative;line-height:1.66}
+.cover .meta{display:flex;gap:26px;flex-wrap:wrap;position:relative}
+.cover .meta div{border-left:2px solid var(--coral);padding-left:12px}
+.cover .meta b{display:block;font-family:var(--disp);font-size:17px;color:var(--ink);font-weight:600}
+.cover .meta span{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- secciones ---------- */
+section{padding:64px 0 8px;scroll-margin-top:70px}
+section+section{border-top:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--coral);margin:0 0 14px}
+h3{font-family:var(--disp);font-size:34px;font-weight:600;color:var(--ink);letter-spacing:-.025em;line-height:1.16;margin:0 0 18px;max-width:22ch}
+h4{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);margin:38px 0 10px;letter-spacing:-.01em}
+p{margin:0 0 16px;max-width:74ch}
+.lead{font-size:17.5px;color:var(--ink);line-height:1.62;max-width:66ch;font-weight:400}
+strong{color:var(--ink);font-weight:600}
+em.q{font-style:normal;color:var(--coral)}
+ul{margin:0 0 18px;padding-left:22px;max-width:74ch}
+li{margin-bottom:9px}
+li::marker{color:var(--coral)}
+code{font-family:var(--mono);font-size:13px;background:var(--panel2);border-radius:5px;padding:2px 6px;color:var(--ink)}
+
+/* ---------- figuras ---------- */
+figure{margin:26px 0 30px;background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+figure .canvas{padding:20px 22px;background:radial-gradient(120% 140% at 20% 0%,#1F2226 0%,#141518 70%)}
+figure svg{display:block;width:100%;height:auto}
+figcaption{border-top:1px solid var(--line);padding:13px 22px;font-size:13.2px;color:var(--muted);line-height:1.6}
+figcaption b{color:var(--body);font-weight:600}
+.dt{fill:#EDEFF2;font-family:"Inter",sans-serif;font-size:14px;font-weight:600}
+.ds{fill:#B9BEC6;font-family:"Inter",sans-serif;font-size:12.5px}
+.dm{fill:#7C828B;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.13em}
+.dc{fill:#FF7A50;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.06em}
+.box{fill:#1C1F23;stroke:#34383F;stroke-width:1.4}
+.box.hi{fill:rgba(255,122,80,.12);stroke:#FF7A50;stroke-width:1.8}
+.box.mute{fill:#17191C;stroke:#282B30}
+.ln{stroke:#3A3E45;stroke-width:1.6;fill:none}
+.ln.on{stroke:#FF7A50;stroke-width:2}
+.ln.dash{stroke-dasharray:5 6}
+
+/* ---------- llamadas ---------- */
+.note{border-left:3px solid var(--coral);background:linear-gradient(90deg,var(--coral-t),rgba(255,122,80,.02));border-radius:0 12px 12px 0;padding:16px 20px;margin:24px 0;max-width:78ch}
+.note.warn{border-left-color:var(--amber);background:linear-gradient(90deg,rgba(240,184,92,.11),transparent)}
+.note.stop{border-left-color:var(--rose);background:linear-gradient(90deg,rgba(240,119,110,.11),transparent)}
+.note b{display:block;font-family:var(--disp);font-size:15px;color:var(--ink);margin-bottom:4px;font-weight:600}
+.note p{margin:0;font-size:14.4px;max-width:none}
+
+/* ---------- rejillas ---------- */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 19px}
+.tile .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);margin-bottom:9px}
+.tile h5{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--ink);margin:0 0 7px}
+.tile p{font-size:13.8px;margin:0;color:var(--body);line-height:1.6}
+.formula{background:var(--deep);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:22px 0;font-family:var(--mono);font-size:14px;color:var(--ink);line-height:2.1;overflow-x:auto}
+.formula .lbl{color:var(--muted);font-size:11px;letter-spacing:.13em;text-transform:uppercase}
+.formula .hl{color:var(--coral)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 6px}
+.chip{font-family:var(--mono);font-size:13.5px;padding:7px 11px;border-radius:8px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink)}
+.chip.c{border-color:rgba(255,122,80,.5);background:rgba(255,122,80,.12);color:#FFB496}
+.chip.m{border-color:rgba(111,211,199,.4);background:rgba(111,211,199,.1);color:#9FE4DA}
+.count{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:24px 0}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:10px 12px;border-bottom:1px solid var(--line2)}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--body)}
+td strong{color:var(--ink)}
+tr:last-child td{border-bottom:0}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:24px 0}
+.links a{display:flex;gap:13px;align-items:center;text-decoration:none;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px 17px;transition:border-color .2s,transform .2s}
+.links a:hover{border-color:var(--coral);transform:translateY(-2px)}
+.links .ic{width:36px;height:36px;border-radius:10px;background:var(--coral-t);display:grid;place-items:center;font-size:18px;flex:0 0 36px}
+.links b{display:block;font-family:var(--disp);font-size:14.5px;color:var(--ink);font-weight:600}
+.links span{font-family:var(--mono);font-size:11px;color:var(--muted);word-break:break-all}
+
+/* ---------- cuestionario ---------- */
+.quiz{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-top:28px}
+.qtop{display:flex;align-items:center;gap:16px;padding:18px 22px;border-bottom:1px solid var(--line);background:var(--deep)}
+.qtop .idx{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--ink);margin-right:auto}
+.qtop .idx small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-top:2px}
+.qtop .score{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.pips{display:flex;gap:5px}
+.pips i{width:26px;height:4px;border-radius:2px;background:#33373E;display:block;transition:background .3s}
+.pips i.now{background:var(--coral)}
+.pips i.ok{background:var(--mint)}
+.pips i.no{background:var(--rose)}
+.qbody{padding:26px 24px}
+.qtag{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);margin:0 0 12px}
+.qq{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--ink);line-height:1.35;margin:0 0 20px;max-width:60ch}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:14px;align-items:flex-start;text-align:left;background:var(--panel2);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;font-family:var(--sans);font-size:14.5px;color:var(--body);cursor:pointer;line-height:1.55;transition:border-color .18s,transform .18s,background .18s}
+.opt:hover:not(:disabled){border-color:var(--coral);transform:translateX(3px)}
+.opt .k{font-family:var(--mono);font-size:12px;color:var(--muted);flex:0 0 16px;padding-top:2px}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--mint);background:rgba(111,211,199,.1);color:#C9EFE9}
+.opt.right .k{color:var(--mint)}
+.opt.wrong{border-color:var(--rose);background:rgba(240,119,110,.1);color:#F5C9C5}
+.opt.wrong .k{color:var(--rose)}
+.opt.off{opacity:.42}
+.fb{margin-top:20px;border-radius:12px;padding:16px 18px;font-size:14.2px;border-left:3px solid;display:none;line-height:1.65}
+.fb.show{display:block}
+.fb.y{border-color:var(--mint);background:rgba(111,211,199,.08)}
+.fb.n{border-color:var(--rose);background:rgba(240,119,110,.08)}
+.fb b{display:block;font-family:var(--disp);font-size:15px;color:var(--ink);margin-bottom:4px}
+.qfoot{padding:15px 22px;border-top:1px solid var(--line);background:var(--deep);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qfoot .hint{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-right:auto}
+.btn{border:1px solid var(--coral);background:var(--coral);color:#141517;font-family:var(--sans);font-size:13.5px;font-weight:600;border-radius:9px;padding:9px 18px;cursor:pointer;transition:all .18s}
+.btn:hover{background:var(--coral-d);border-color:var(--coral-d)}
+.btn.ghost{background:transparent;color:var(--body);border-color:var(--line2)}
+.btn.ghost:hover{border-color:var(--coral);color:var(--coral);background:transparent}
+.result{text-align:center;padding:32px 20px}
+.result .big{font-family:var(--disp);font-size:68px;font-weight:700;color:var(--ink);line-height:1;letter-spacing:-.04em}
+.result .of{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:8px}
+.result .msg{font-size:15px;max-width:52ch;margin:20px auto 0;color:var(--body)}
+.review{text-align:left;max-width:60ch;margin:26px auto 0}
+.review .item{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:13.6px}
+.review .item b{display:block;color:var(--ink);margin-bottom:6px;font-weight:600}
+.review .bad{color:var(--rose)}
+.review .good{color:var(--mint)}
+.foot{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5D626A}
+
+
+/* ---------- movimiento ---------- */
+@keyframes stripeIn{from{transform:skewX(-24deg) translateX(120px);opacity:0}to{transform:skewX(-24deg) translateX(0);opacity:1}}
+.cover .stripes i{animation:stripeIn .9s cubic-bezier(.2,.8,.3,1) both}
+.cover .stripes i:nth-child(1){animation-delay:.10s}
+.cover .stripes i:nth-child(2){animation-delay:.20s}
+.cover .stripes i:nth-child(3){animation-delay:.30s}
+.cover .stripes i:nth-child(4){animation-delay:.40s}
+@keyframes riseIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.cover .kicker{animation:riseIn .7s .05s both}
+.cover h2{animation:riseIn .7s .16s both}
+.cover .sub{animation:riseIn .7s .28s both}
+.cover .meta{animation:riseIn .7s .40s both}
+
+figure svg .rise{opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.75,.3,1)}
+figure.in svg .rise{opacity:1;transform:none}
+figure svg .grow{transform:scaleX(0);transform-box:fill-box;transform-origin:left center;transition:transform .9s cubic-bezier(.2,.8,.3,1)}
+figure.in svg .grow{transform:scaleX(1)}
+figure svg .draw{stroke-dasharray:380;stroke-dashoffset:380;transition:stroke-dashoffset 1.2s ease .35s}
+figure.in svg .draw{stroke-dashoffset:0}
+.flow{stroke-dasharray:5 7;animation:flowd 1.7s linear infinite}
+@keyframes flowd{to{stroke-dashoffset:-24}}
+.pulse{animation:puls 2.8s ease-in-out infinite}
+@keyframes puls{0%,100%{opacity:.5}50%{opacity:1}}
+.bob{animation:bob 6s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-5px)}}
+
+/* ---------- figuras por pasos ---------- */
+.stepfig g[data-s]{opacity:.13;transition:opacity .55s ease}
+.stepfig g[data-s].on{opacity:1}
+.stepfig g[data-s].now .box{stroke:#FF7A50;fill:rgba(255,122,80,.12)}
+.stepfig g[data-s].now text.ds{fill:#FFD3C1}
+.stepfig g[data-s].now text.dm{fill:#FF9A73}
+.deck{border-top:1px solid var(--line);background:var(--panel)}
+.cards{padding:22px 24px 6px;min-height:126px}
+.card{display:none}
+.card.on{display:block;animation:cardIn .4s cubic-bezier(.2,.8,.3,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card .step{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);display:block;margin-bottom:9px}
+.card h5{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);margin:0 0 8px}
+.card p{font-size:14.6px;line-height:1.65;margin:0;max-width:72ch}
+.ctrls{display:flex;align-items:center;gap:10px;padding:14px 24px;border-top:1px solid var(--line);background:var(--deep);flex-wrap:wrap}
+.ctrls .dots{display:flex;gap:6px;margin-right:auto}
+.ctrls .dots button{width:26px;height:5px;border-radius:3px;border:0;background:#33373E;cursor:pointer;padding:0;transition:background .3s,width .3s}
+.ctrls .dots button.on{background:var(--coral);width:42px}
+.ctrls .dots button.done{background:#7C5343}
+.btn.sm{padding:8px 15px;font-size:12.6px}
+.btn:disabled{opacity:.32;cursor:default}
+.btn:disabled:hover{background:var(--coral);border-color:var(--coral)}
+.btn.ghost:disabled:hover{background:transparent;border-color:var(--line2);color:var(--body)}
+
+
+/* ---------- recursos y materiales ---------- */
+.res{display:flex;flex-direction:column;gap:12px;margin:26px 0}
+.rescard{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+a.rescard{display:flex;align-items:center;gap:14px;padding:16px 18px;text-decoration:none;transition:border-color .2s,transform .2s}
+a.rescard:hover{border-color:var(--coral);transform:translateY(-2px)}
+.rescard .ic{width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:var(--coral-t);display:grid;place-items:center;font-size:18px}
+.rescard .bd{flex:1;min-width:0;text-align:left}
+.rescard .bd b{display:block;font-family:var(--disp);font-size:15px;color:var(--ink);font-weight:600;margin-bottom:2px}
+.rescard .bd span{display:block;font-size:12.8px;color:var(--muted);line-height:1.5}
+.rescard .go,.rescard .chev{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--coral);white-space:nowrap}
+.reshead{display:flex;align-items:center;gap:14px;width:100%;padding:16px 18px;background:transparent;border:0;cursor:pointer;font-family:var(--sans)}
+.reshead:hover .chev{color:#FFB496}
+.resbody{display:none;border-top:1px solid var(--line)}
+.rescard.open .resbody{display:block;animation:cardIn .35s cubic-bezier(.2,.8,.3,1)}
+.codetop{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--deep);border-bottom:1px solid var(--line)}
+.codetop .lang{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:auto}
+.copy{border:1px solid var(--line2);background:transparent;color:var(--body);font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;border-radius:7px;padding:6px 13px;cursor:pointer;transition:all .18s}
+.copy:hover{border-color:var(--coral);color:var(--coral)}
+.copy.ok{border-color:var(--mint);color:var(--mint)}
+.rescard pre{margin:0;padding:18px 20px;overflow:auto;max-height:440px;background:#0E0F11}
+.rescard code{font-family:var(--mono);font-size:12.9px;line-height:1.78;color:#D7DCE3;background:transparent;padding:0;border-radius:0;white-space:pre}
+
+
+/* ---------- recursos informativos (sin enlace) ---------- */
+div.rescard.static{display:flex;align-items:center;gap:14px;padding:16px 18px}
+div.rescard.static .go{color:var(--muted)}
+.links a>div{min-width:0}
+
+@media(max-width:980px){
+  .shell{flex-direction:column}
+  .rail{width:100%;flex:none;height:auto;position:static;border-right:0;border-bottom:1px solid var(--line)}
+  .toc{display:none;padding-bottom:20px}
+  body.open .toc{display:block}
+  .menu{display:inline-flex;border:1px solid var(--line2);background:transparent;color:var(--body);border-radius:7px;padding:7px 12px;font-family:var(--sans);font-size:12.5px;cursor:pointer}
+  .bar,.page{padding-left:20px;padding-right:20px}
+  .cover{padding:36px 24px 34px}
+  .cover h2{font-size:34px;max-width:none}
+  .cover .stripes{display:none}
+  h3{font-size:26px}
+  .duo,.trio{grid-template-columns:1fr}
+  figure .canvas{padding:14px 12px;overflow-x:auto}
+  figure svg{min-width:620px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="rail">
+  <div class="mark">
+    <div class="logo">
+      <svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true">
+        <path d="M14 4c4 0 7 2.6 7.6 6.2 3 .2 5.4 2.5 5.4 5.4 0 3-2.6 5.4-5.8 5.4H12c-3.9 0-7-2.9-7-6.5 0-3 2.1-5.5 5-6.2C10.6 5.6 12.1 4 14 4z" fill="#FF7A50"/>
+        <rect x="0" y="8" width="3" height="3" fill="#FF7A50" opacity=".9"/>
+        <rect x="4" y="14" width="3" height="3" fill="#FF7A50" opacity=".7"/>
+        <rect x="0" y="17" width="2.4" height="2.4" fill="#FF7A50" opacity=".5"/>
+        <rect x="5" y="4" width="2.4" height="2.4" fill="#FF7A50" opacity=".6"/>
+      </svg>
+      <span>datapath</span>
+    </div>
+    <p class="course">AI Architecture, Security &amp; Governance</p>
+    <h1>Sesión 1 · AI Architecture</h1>
+    <p>Sesión 1 de 3 · 4 horas</p>
+  </div>
+  <nav class="toc" id="toc"></nav>
+</aside>
+
+<main class="stage">
+  <div class="bar">
+    <button class="menu" id="menu">Temario</button>
+    <span class="where" id="where">Portada</span>
+    <button class="go" id="go">Cuestionario</button>
+    <i class="rule" id="rule"></i>
+  </div>
+  <div class="page">
+
+  <header class="cover">
+    <div class="stripes"><i></i><i></i><i></i><i></i></div>
+    <p class="kicker">Sesión 1 de 3</p>
+    <h2>AI Architecture</h2>
+    <p class="sub">Un endpoint que responde no es un agente. En cinco versiones pasamos de un POST /diagnose que inventa a un agente con historial, herramientas, memoria y dos formas de desplegarlo, usando el caso de la bomba P-204.</p>
+    <div class="meta">
+      <div><b>16 temas</b><span>con diagramas</span></div>
+      <div><b>6 preguntas</b><span>autoevaluación final</span></div>
+      <div><b>4 horas</b><span>duración estimada</span></div>
+    </div>
+  </header>
+
+<section id="s1" data-grp="Punto de partida" data-nav="El caso P-204">
+<p class="eyebrow">01 · El caso</p>
+<h3>Un agente se construye en capas, y cada capa corrige a la anterior</h3>
+<p class="lead">La bomba centrífuga <strong>P-204</strong> de PLANT-A tiene el rodamiento a 86 °C y vibra a 8.4 mm/s. Un técnico necesita saber qué hacer. Esta sesión construye, en cinco versiones, el agente que le responde con evidencia.</p>
+<p>Todo el taller usa <strong>datos sintéticos</strong>: el incidente es INC-204 y los números son ficticios. No son límites de seguridad industrial, y el agente tampoco los usa como tales. La respuesta correcta distingue lo que se midió, lo que se infiere, qué fuente lo respalda y qué conviene comprobar a continuación. Cuando falta evidencia, lo correcto es pedir una medición adicional, no inventar una causa raíz.</p><p>El orden de las versiones no es arbitrario. Un endpoint con un LLM responde, pero inventa. Con historial recuperado deja de inventar, pero solo conoce el pasado. Con herramientas ve el presente, pero en una única pasada. Con un grafo itera y recuerda, pero corre en tu máquina. Al desplegarlo queda listo para que la Sesión 2 lo ataque.</p><figure><div class="canvas"><svg viewBox="0 0 940 190" role="img" aria-label="Cinco versiones encadenadas: endpoint, RAG, MCP, grafo con memoria y despliegue; cada una resuelve el límite de la anterior."><text class="dm" x="102" y="38" text-anchor="middle">V01 · 35 MIN</text><g class="rise"><rect class="box" x="27" y="52" width="150" height="62" rx="12"/><text class="dt" x="102" y="80" text-anchor="middle">Endpoint</text><text class="ds" x="102" y="98" text-anchor="middle">LLM responde</text></g><text class="dm" x="102" y="146" text-anchor="middle">limite:</text><text class="ds" x="102" y="166" text-anchor="middle">el LLM inventa</text><path class="ln on flow" d="M179 83 H198"/><polygon points="197,77 209,83 197,89" fill="#FF7A50"/><text class="dm" x="286" y="38" text-anchor="middle">V02 · 45 MIN</text><g class="rise"><rect class="box" x="211" y="52" width="150" height="62" rx="12"/><text class="dt" x="286" y="80" text-anchor="middle">RAG</text><text class="ds" x="286" y="98" text-anchor="middle">+ historial</text></g><text class="dm" x="286" y="146" text-anchor="middle">limite:</text><text class="ds" x="286" y="166" text-anchor="middle">solo ve el pasado</text><path class="ln on flow" d="M363 83 H382"/><polygon points="381,77 393,83 381,89" fill="#FF7A50"/><text class="dm" x="470" y="38" text-anchor="middle">V03 · 45 MIN</text><g class="rise"><rect class="box" x="395" y="52" width="150" height="62" rx="12"/><text class="dt" x="470" y="80" text-anchor="middle">MCP</text><text class="ds" x="470" y="98" text-anchor="middle">+ datos en vivo</text></g><text class="dm" x="470" y="146" text-anchor="middle">limite:</text><text class="ds" x="470" y="166" text-anchor="middle">una sola pasada</text><path class="ln on flow" d="M547 83 H566"/><polygon points="565,77 577,83 565,89" fill="#FF7A50"/><text class="dm" x="654" y="38" text-anchor="middle">V04 · 50 MIN</text><g class="rise"><rect class="box" x="579" y="52" width="150" height="62" rx="12"/><text class="dt" x="654" y="80" text-anchor="middle">Grafo</text><text class="ds" x="654" y="98" text-anchor="middle">+ razona y recuerda</text></g><text class="dm" x="654" y="146" text-anchor="middle">limite:</text><text class="ds" x="654" y="166" text-anchor="middle">solo corre en local</text><path class="ln on flow" d="M731 83 H750"/><polygon points="749,77 761,83 749,89" fill="#FF7A50"/><text class="dm" x="838" y="38" text-anchor="middle">V05 · 45 MIN</text><g class="rise"><rect class="box hi" x="763" y="52" width="150" height="62" rx="12"/><text class="dt" x="838" y="80" text-anchor="middle" fill="#FFB496">Despliegue</text><text class="ds" x="838" y="98" text-anchor="middle">+ se despliega</text></g><text class="dm" x="838" y="146" text-anchor="middle">limite:</text><text class="ds" x="838" y="166" text-anchor="middle">sin controles aún</text></svg></div><figcaption><b>Figura 1.</b> Cada versión nace de la limitación visible de la anterior. Nada se reescribe: V05 ejecuta el mismo núcleo que V01 empezó a construir.</figcaption></figure><div class="duo"><div class="tile"><div class="tag">Alcance</div><h5>Qué entra</h5><p>Diagnóstico asistido: consultar historial, leer sensores simulados, formular hipótesis y proponer comprobaciones.</p></div><div class="tile"><div class="tag">Fuera de alcance</div><h5>Qué nunca entra</h5><p>Control de PLC o SCADA, cambiar setpoints, detener maquinaria o conectarse a sistemas industriales reales.</p></div></div><div class="note"><b>Mock primero</b><p>Todo funciona sin red y sin costo en modo <code>mock</code>. OpenAI y Supabase se activan por configuración. Esto no es comodidad: es lo que permite que las pruebas corran en cualquier máquina y en CI.</p></div>
+</section>
+
+<section id="s2" data-grp="El endpoint" data-nav="Ruta, servicio, proveedor">
+<p class="eyebrow">02 · V01 · FastAPI</p>
+<h3>La ruta no sabe qué modelo hay detrás, y esa ignorancia es una decisión de diseño</h3>
+<p class="lead">Un <code>POST /diagnose</code> que llama a OpenAI funciona en cinco minutos. Una cadena ruta → servicio → interfaz → proveedor tarda diez, y es la que sobrevive al resto del taller.</p>
+<p>El error clásico de V01 es poner la llamada a OpenAI dentro de la ruta. Funciona hasta que hay que probar sin red, cambiar de proveedor, medir costos o reutilizar la lógica desde Lambda. Cada una de esas necesidades obliga entonces a tocar el mismo archivo. Separar capas cuesta poco al principio y evita reescrituras después.</p><figure class="stepfig"><div class="canvas"><svg viewBox="0 0 940 280" role="img" aria-label="Cadena de capas: técnico, ruta POST /diagnose, servicio, interfaz LLMProvider y dos implementaciones, OpenAI y mock."><g data-s="0"><g><rect class="box" x="27" y="70" width="150" height="62" rx="12"/><text class="dt" x="102" y="98" text-anchor="middle">Técnico</text><text class="ds" x="102" y="116" text-anchor="middle">cliente HTTP</text></g><g><rect class="box" x="211" y="70" width="150" height="62" rx="12"/><text class="dt" x="286" y="98" text-anchor="middle">POST /diagnose</text><text class="ds" x="286" y="116" text-anchor="middle">valida con Pydantic</text></g><path class="ln on flow" d="M179 101 H198"/><polygon points="197,95 209,101 197,107" fill="#FF7A50"/></g><g data-s="1"><path class="ln on flow" d="M363 101 H382"/><polygon points="381,95 393,101 381,107" fill="#FF7A50"/><g><rect class="box" x="395" y="70" width="150" height="62" rx="12"/><text class="dt" x="470" y="98" text-anchor="middle">Diagnosis Service</text><text class="ds" x="470" y="116" text-anchor="middle">lógica del caso</text></g></g><g data-s="2"><path class="ln on flow" d="M547 101 H566"/><polygon points="565,95 577,101 565,107" fill="#FF7A50"/><g><rect class="box hi" x="579" y="70" width="150" height="62" rx="12"/><text class="dt" x="654" y="98" text-anchor="middle" fill="#FFB496">LLMProvider</text><text class="ds" x="654" y="116" text-anchor="middle">interfaz (base.py)</text></g></g><g data-s="3"><path class="ln on flow" d="M731 101 H746 V68 H761"/><path class="ln on flow" d="M746 101 V134 H761"/><polygon points="749,62 761,68 749,74" fill="#FF7A50"/><polygon points="749,128 761,134 749,140" fill="#FF7A50"/><g><rect class="box" x="763" y="40" width="150" height="56" rx="12"/><text class="dt" x="838" y="65" text-anchor="middle">OpenAIProvider</text><text class="ds" x="838" y="83" text-anchor="middle">modo real</text></g><g><rect class="box" x="763" y="106" width="150" height="56" rx="12"/><text class="dt" x="838" y="131" text-anchor="middle">MockProvider</text><text class="ds" x="838" y="149" text-anchor="middle">offline, determinista</text></g><rect class="box mute" x="27" y="196" width="886" height="56" rx="12"/><text class="ds" x="470" y="229" text-anchor="middle">Respuesta tipada DiagnosisResponse · si el proveedor falla, la ruta responde 503 sin filtrar detalles</text></g></svg></div><div class="deck"><div class="cards"><article class="card on"><span class="step">Paso 1 de 4</span><h5>La ruta solo valida y delega</h5><p><code>POST /diagnose</code> recibe un <code>DiagnoseRequest</code> con <code>incident_id</code>, <code>equipment_id</code>, <code>plant_id</code> y síntomas. Pydantic rechaza lo inválido antes de que exista lógica. La ruta no sabe qué es un LLM: es un adaptador HTTP delgado.</p></article><article class="card"><span class="step">Paso 2 de 4</span><h5>El servicio concentra el caso</h5><p><code>DiagnosisService</code> es el único lugar con lógica de negocio. La misma clase la usan <code>/diagnose</code>, <code>/diagnose/quick</code> y <code>/diagnose/extended</code>, y más adelante el handler de Lambda. Por eso la ruta puede ser trivial.</p></article><article class="card"><span class="step">Paso 3 de 4</span><h5>La interfaz oculta al proveedor</h5><p>El servicio habla con <code>LLMProvider</code>, un contrato con una operación de razonamiento. No importa ni la librería de OpenAI ni sus excepciones. Esa ignorancia deliberada es lo que hace intercambiable al proveedor.</p></article><article class="card"><span class="step">Paso 4 de 4</span><h5>Detrás hay dos implementaciones</h5><p><code>OpenAIProvider</code> hace la llamada real y traduce sus errores a un error propio; <code>MockProvider</code> responde de forma determinista y sin red. El resultado vuelve como modelo Pydantic, nunca como texto libre. Si el proveedor cae, el cliente recibe 503 con un mensaje genérico, sin detalles internos.</p></article></div><div class="ctrls"><div class="dots"></div><button class="btn ghost sm prev" type="button">Anterior</button><button class="btn sm next" type="button">Siguiente</button></div></div></figure><div class="note"><b>Pydantic en ambos extremos</b><p>La entrada se valida (por ejemplo, <code>incident_id</code> debe cumplir el patrón <code>INC-…</code>) y la salida es un modelo con <code>observations</code>, <code>hypotheses</code>, <code>citations</code>, <code>status</code> y los identificadores de la ejecución. Un cliente puede programar contra un contrato, no contra prosa.</p></div>
+</section>
+
+<section id="s3" data-grp="El endpoint" data-nav="Modos y errores">
+<p class="eyebrow">03 · V01 · Proveedores</p>
+<h3>El modo mock es la primera función del producto, no un recurso de prueba</h3>
+<p class="lead">El proveedor, los embeddings, el almacén de datos, la cola de acciones y los secretos tienen una versión local y una real. Se cambian en <code>.env</code>, no en el código.</p>
+<p>Un mock bien hecho es determinista: con la misma entrada devuelve la misma salida. Eso permite escribir aserciones exactas (“con 86 °C y 8.4 mm/s, la hipótesis principal es desgaste de rodamiento”) y detectar cuando un cambio rompe el comportamiento. Con un LLM real, esa aserción sería una apuesta.</p><table><tr><th>Variable</th><th>Local</th><th>Real</th></tr><tr><td><code>LLM_MODE</code></td><td>mock</td><td>openai</td></tr><tr><td><code>EMBEDDING_MODE</code></td><td>mock</td><td>openai</td></tr><tr><td><code>STORE_MODE</code></td><td>memory</td><td>supabase</td></tr><tr><td><code>ACTION_QUEUE_MODE</code></td><td>inline</td><td>sqs</td></tr><tr><td><code>SECRETS_BACKEND</code></td><td>env</td><td>aws (Secrets Manager)</td></tr></table><div class="duo"><div class="tile"><div class="tag">Fallo del proveedor</div><h5>503 sin detalles</h5><p>Si el LLM da timeout o cae, el servicio lanza <code>ServiceUnavailable</code> y la API responde 503 con un mensaje genérico. Los detalles del proveedor no salen al cliente.</p></div><div class="tile"><div class="tag">Configuración</div><h5>Sin secretos en código</h5><p><code>.env.example</code> se versiona con valores vacíos; <code>.env</code> está en <code>.gitignore</code>. Fallar rápido si falta la clave, en vez de a mitad de una petición.</p></div></div><div class="note warn"><b>El mock no demuestra calidad</b><p>Que el mock sea reproducible no significa que el diagnóstico sea correcto: demuestra que <strong>la plomería</strong> funciona. La calidad del modelo real se mide aparte, con casos de evaluación, y eso llega en la Sesión 3.</p></div>
+</section>
+
+<section id="s4" data-grp="Evidencia" data-nav="RAG: buscar antes">
+<p class="eyebrow">04 · V02 · RAG</p>
+<h3>Buscar antes de responder convierte la memoria del modelo en evidencia auditable</h3>
+<p class="lead">Un LLM no conoce el historial de fallas de tu planta. Sin él, completa con lo más verosímil, y en mantenimiento lo verosímil y lo cierto no siempre coinciden.</p>
+<p>RAG tiene dos fases con vidas distintas. La <strong>ingesta</strong> ocurre una vez por documento: partir, vectorizar, guardar. La <strong>consulta</strong> ocurre en cada petición: vectorizar la pregunta, buscar los fragmentos más cercanos y entregárselos al modelo. Lo que une ambas fases es el modelo de embeddings, que debe ser el mismo.</p><figure class="stepfig"><div class="canvas"><svg viewBox="0 0 940 300" role="img" aria-label="Dos carriles: ingesta (fallas, chunking, embedding, pgvector) y consulta (consulta, embedding, similitud top-k, LLM con citas)."><g data-s="0"><text class="dm" x="20" y="36">INGESTA</text><g><rect class="box" x="20" y="54" width="170" height="58" rx="12"/><text class="dt" x="105" y="80" text-anchor="middle">Fallas históricas</text><text class="ds" x="105" y="98" text-anchor="middle">datos sintéticos</text></g><path class="ln on flow" d="M192 83 H217"/><polygon points="216,77 228,83 216,89" fill="#FF7A50"/><g><rect class="box" x="230" y="54" width="170" height="58" rx="12"/><text class="dt" x="315" y="80" text-anchor="middle">Chunking</text><text class="ds" x="315" y="98" text-anchor="middle">conserva source_id</text></g></g><g data-s="1"><path class="ln on flow" d="M402 83 H427"/><polygon points="426,77 438,83 426,89" fill="#FF7A50"/><g><rect class="box" x="440" y="54" width="170" height="58" rx="12"/><text class="dt" x="525" y="80" text-anchor="middle">Embedding</text><text class="ds" x="525" y="98" text-anchor="middle">vector de 1536</text></g><path class="ln on flow" d="M612 83 H637"/><polygon points="636,77 648,83 636,89" fill="#FF7A50"/><g><rect class="box hi" x="650" y="54" width="170" height="58" rx="12"/><text class="dt" x="735" y="80" text-anchor="middle" fill="#FFB496">pgvector</text><text class="ds" x="735" y="98" text-anchor="middle">failure_history_chunks</text></g></g><g data-s="2"><text class="dm" x="20" y="188">CONSULTA</text><g><rect class="box" x="20" y="206" width="170" height="58" rx="12"/><text class="dt" x="105" y="232" text-anchor="middle">Consulta P-204</text><text class="ds" x="105" y="250" text-anchor="middle">síntomas + planta</text></g><path class="ln on flow" d="M192 235 H217"/><polygon points="216,229 228,235 216,241" fill="#FF7A50"/><g><rect class="box" x="230" y="206" width="170" height="58" rx="12"/><text class="dt" x="315" y="232" text-anchor="middle">Embedding</text><text class="ds" x="315" y="250" text-anchor="middle">el mismo embedder</text></g></g><g data-s="3"><path class="ln on flow" d="M402 235 H427"/><polygon points="426,229 438,235 426,241" fill="#FF7A50"/><g><rect class="box" x="440" y="206" width="170" height="58" rx="12"/><text class="dt" x="525" y="232" text-anchor="middle">Similitud top-k</text><text class="ds" x="525" y="250" text-anchor="middle">con filtro de planta</text></g><path class="ln on dash flow" d="M735 114 V156 H525 V194"/><polygon points="519,194 525,206 531,194" fill="#FF7A50"/></g><g data-s="4"><path class="ln on flow" d="M612 235 H637"/><polygon points="636,229 648,235 636,241" fill="#FF7A50"/><g><rect class="box hi" x="650" y="206" width="170" height="58" rx="12"/><text class="dt" x="735" y="232" text-anchor="middle" fill="#FFB496">LLM + citas</text><text class="ds" x="735" y="250" text-anchor="middle">redacta con evidencia</text></g></g></svg></div><div class="deck"><div class="cards"><article class="card on"><span class="step">Paso 1 de 5</span><h5>Se parte la historia en chunks</h5><p>La ingesta toma cada falla sintética y la divide en fragmentos del tamaño que un retriever maneja bien. Lo único que no se puede perder en este paso es el <code>source_id</code>: cada chunk debe seguir apuntando a su falla de origen, o después no habrá nada que citar.</p></article><article class="card"><span class="step">Paso 2 de 5</span><h5>Cada chunk se vuelve un vector</h5><p>El modelo de embeddings convierte el texto en un vector de 1536 dimensiones y se guarda en <code>failure_history_chunks</code>, una tabla con la extensión pgvector de Supabase. Es una operación que se hace una vez, no por consulta.</p></article><article class="card"><span class="step">Paso 3 de 5</span><h5>La consulta usa el mismo embedder</h5><p>El técnico describe vibración y temperatura altas en P-204. Esa consulta se convierte en vector con <strong>el mismo</strong> modelo de la ingesta. Con otro modelo, los vectores no son comparables y la búsqueda devuelve ruido sin avisar.</p></article><article class="card"><span class="step">Paso 4 de 5</span><h5>Se recuperan las k fallas más parecidas</h5><p>pgvector ordena por similitud y devuelve los top-k fragmentos con su <code>source_id</code>. El filtro por planta y equipo se aplica en esta misma consulta, no después. Ese detalle es el cimiento del aislamiento que se endurece en la Sesión 2.</p></article><article class="card"><span class="step">Paso 5 de 5</span><h5>El LLM redacta con evidencia citable</h5><p>Recién ahora interviene el modelo, y recibe fragmentos en lugar de memoria propia. La respuesta lleva citas, y cada cita debe existir entre los fragmentos recuperados. Si no hubo evidencia, la respuesta correcta es pedir más datos.</p></article></div><div class="ctrls"><div class="dots"></div><button class="btn ghost sm prev" type="button">Anterior</button><button class="btn sm next" type="button">Siguiente</button></div></div></figure><div class="note stop"><b>Un detalle que rompe todo en silencio</b><p>Si ingestas con un modelo de embeddings y consultas con otro, no hay error: la búsqueda funciona y devuelve resultados irrelevantes. Por eso <code>scripts/ingest.py</code> avisa de que ingesta y consulta deben usar el mismo embedder.</p></div>
+</section>
+
+<section id="s5" data-grp="Evidencia" data-nav="Filtro y citas">
+<p class="eyebrow">05 · V02 · Citas</p>
+<h3>Un diagnóstico fundamentado es el que puede señalar de dónde sale cada afirmación</h3>
+<p class="lead">Dos reglas hacen que RAG sea confiable: filtrar antes de buscar y citar solo lo que se recuperó. Ninguna se resuelve pidiéndole al modelo que se porte bien.</p>
+<p>Filtrar <em class="q">antes</em> de la búsqueda es distinto de filtrar después. Si la consulta de PLANT-A puede ver documentos de PLANT-B y solo se retiran al final, un descuido en esa limpieza filtra información entre plantas. Si el filtro forma parte de la búsqueda, los documentos ajenos nunca entran al contexto del modelo.</p><p>Con las citas pasa algo parecido. El modelo puede “recordar” una fuente que suena bien, como <code>FH-999</code>. El servicio compara cada cita con los fragmentos recuperados y descarta las que no están. Y si la búsqueda no devolvió evidencia, el estado correcto es <code>needs_more_data</code>, no una respuesta confiada.</p><figure><div class="canvas"><svg viewBox="0 0 940 250" role="img" aria-label="El filtro por planta y equipo precede a la búsqueda vectorial; una cita que no esté en los fragmentos recuperados se descarta."><g class="rise"><rect class="box" x="27" y="50" width="150" height="62" rx="12"/><text class="dt" x="102" y="78" text-anchor="middle">Consulta</text><text class="ds" x="102" y="96" text-anchor="middle">planta + equipo</text></g><g class="rise"><rect class="box hi" x="211" y="50" width="150" height="62" rx="12"/><text class="dt" x="286" y="78" text-anchor="middle" fill="#FFB496">Filtro</text><text class="ds" x="286" y="96" text-anchor="middle">planta / equipo</text></g><g class="rise"><rect class="box" x="395" y="50" width="150" height="62" rx="12"/><text class="dt" x="470" y="78" text-anchor="middle">pgvector</text><text class="ds" x="470" y="96" text-anchor="middle">similitud</text></g><g class="rise"><rect class="box" x="579" y="50" width="150" height="62" rx="12"/><text class="dt" x="654" y="78" text-anchor="middle">Top-k</text><text class="ds" x="654" y="96" text-anchor="middle">fragmentos + source_id</text></g><g class="rise"><rect class="box hi" x="763" y="50" width="150" height="62" rx="12"/><text class="dt" x="838" y="78" text-anchor="middle" fill="#FFB496">Respuesta</text><text class="ds" x="838" y="96" text-anchor="middle">citas validadas</text></g><path class="ln on flow" d="M179 81 H198"/><polygon points="197,75 209,81 197,87" fill="#FF7A50"/><path class="ln on flow" d="M363 81 H382"/><polygon points="381,75 393,81 381,87" fill="#FF7A50"/><path class="ln on flow" d="M547 81 H566"/><polygon points="565,75 577,81 565,87" fill="#FF7A50"/><path class="ln on flow" d="M731 81 H750"/><polygon points="749,75 761,81 749,87" fill="#FF7A50"/><path class="ln dash" d="M286 114 V176" stroke="#F0776E"/><polygon points="280,164 286,176 292,164" fill="#F0776E"/><text class="dm" x="299" y="146" fill="#F0776E">NUNCA SE BUSCAN</text><rect class="box mute rise" x="191" y="178" width="190" height="50" rx="12"/><text class="ds" x="286" y="208" text-anchor="middle">Documentos de PLANT-B</text><path class="ln dash" d="M838 114 V176" stroke="#F0776E"/><polygon points="832,164 838,176 844,164" fill="#F0776E"/><text class="dm" x="825" y="146" text-anchor="end" fill="#F0776E">SE DESCARTA</text><rect class="box mute rise" x="559" y="178" width="361" height="50" rx="12"/><text class="ds" x="739" y="208" text-anchor="middle">Cita que no está en el top-k</text></svg></div><figcaption><b>Figura 2.</b> Hay dos cierres de puerta distintos. El filtro impide que los documentos de otra planta lleguen a existir en el contexto; la validación de citas impide que el modelo invente una fuente. Ninguno depende de que el prompt “pida portarse bien”.</figcaption></figure><div class="note"><b>Esto es la base de V07</b><p>Que el filtro por planta viva en la consulta es el primer paso del aislamiento. En la Sesión 2 se verifica que PLANT-A no alcance a PLANT-B por ninguna ruta: endpoint, RAG, memoria o MCP.</p></div>
+</section>
+
+<section id="s6" data-grp="Herramientas" data-nav="MCP: tres herramientas">
+<p class="eyebrow">06 · V03 · MCP</p>
+<h3>El historial dice qué pasó; las herramientas dicen qué está pasando</h3>
+<p class="lead">RAG no tiene la temperatura de hoy. Para eso el agente necesita llamar herramientas, y MCP es el estándar para que las descubra y las invoque sin acoplarse a cada una.</p>
+<p>Un servidor MCP publica un catálogo de herramientas con sus contratos. El cliente las <em class="q">descubre</em> en lugar de tenerlas escritas a mano, y las llama con argumentos tipados. Aquí el servidor de mantenimiento ofrece tres, todas de solo lectura y con datos simulados:</p><table><tr><th>Herramienta</th><th>Devuelve</th><th>Para qué sirve en P-204</th></tr><tr><td><code>get_equipment_info</code></td><td>Modelo, criticidad, ubicación, mantenimiento programado</td><td>Saber qué equipo es y qué tan crítico</td></tr><tr><td><code>get_sensor_readings</code></td><td>Temperatura, vibración y presión</td><td>86 °C, 8.4 mm/s, 2.8 bar</td></tr><tr><td><code>get_failure_history</code></td><td>Fallas previas del equipo</td><td>Contrastar con lo recuperado por RAG</td></tr></table><div class="duo"><div class="tile"><div class="tag">Pasado</div><h5>Retriever (V02)</h5><p>Fallas parecidas, con fuente. Responde “¿qué ha pasado antes en equipos como este?”.</p></div><div class="tile"><div class="tag">Presente</div><h5>Herramientas MCP (V03)</h5><p>Mediciones y datos maestros actuales. Responde “¿cómo está ahora este equipo?”.</p></div></div><div class="note warn"><b>Ninguna herramienta escribe</b><p>En esta sesión todas las herramientas leen. Las que modifican algo, como una orden de trabajo, llegan en la Sesión 2 con aprobación humana. Conectarse al servidor MCP no es sinónimo de estar autorizado.</p></div>
+</section>
+
+<section id="s7" data-grp="Herramientas" data-nav="Tool Gateway">
+<p class="eyebrow">07 · V03 · Gateway</p>
+<h3>Un solo camino hacia las herramientas es un solo lugar donde endurecer</h3>
+<p class="lead">El agente no llama al servidor MCP. Llama al Tool Gateway, que valida la llamada antes de pasarla al cliente. Parece una capa de más; es la que hace posible casi todo lo de la Sesión 2.</p>
+<p>El modelo decide qué herramienta pedir, y un modelo puede equivocarse o ser manipulado: inventar un nombre, mandar un argumento de otro tipo o pedir algo que no corresponde. El gateway convierte esa decisión en una solicitud que se valida. Si la herramienta no existe o los argumentos no cumplen el contrato, la llamada se rechaza con un error claro y no llega al servidor.</p><figure><div class="canvas"><svg viewBox="0 0 940 280" role="img" aria-label="El agente nunca habla con el servidor MCP directamente: pasa por Tool Gateway, cliente MCP y servidor, que expone tres herramientas."><g class="rise"><rect class="box" x="20" y="98" width="130" height="62" rx="12"/><text class="dt" x="85" y="126" text-anchor="middle">Agente</text><text class="ds" x="85" y="144" text-anchor="middle">razona</text></g><g class="rise"><rect class="box hi" x="184" y="98" width="130" height="62" rx="12"/><text class="dt" x="249" y="126" text-anchor="middle" fill="#FFB496">Tool Gateway</text><text class="ds" x="249" y="144" text-anchor="middle">valida todo</text></g><g class="rise"><rect class="box" x="348" y="98" width="130" height="62" rx="12"/><text class="dt" x="413" y="126" text-anchor="middle">MCP Client</text><text class="ds" x="413" y="144" text-anchor="middle">protocolo</text></g><g class="rise"><rect class="box" x="512" y="98" width="130" height="62" rx="12"/><text class="dt" x="577" y="126" text-anchor="middle">MCP Server</text><text class="ds" x="577" y="144" text-anchor="middle">mantenimiento</text></g><path class="ln on flow" d="M152 129 H171"/><polygon points="170,123 182,129 170,135" fill="#FF7A50"/><path class="ln on flow" d="M316 129 H335"/><polygon points="334,123 346,129 334,135" fill="#FF7A50"/><path class="ln on flow" d="M480 129 H499"/><polygon points="498,123 510,129 498,135" fill="#FF7A50"/><path class="ln on flow" d="M644 129 H664 V58 H680"/><path class="ln on flow" d="M664 129 H680"/><path class="ln on flow" d="M664 129 V200 H680"/><polygon points="668,52 680,58 668,64" fill="#FF7A50"/><polygon points="668,123 680,129 668,135" fill="#FF7A50"/><polygon points="668,194 680,200 668,206" fill="#FF7A50"/><g class="rise"><rect class="box" x="682" y="34" width="238" height="48" rx="12"/><text class="dt" x="801" y="63" text-anchor="middle">get_equipment_info</text></g><g class="rise"><rect class="box" x="682" y="105" width="238" height="48" rx="12"/><text class="dt" x="801" y="134" text-anchor="middle">get_sensor_readings</text></g><g class="rise"><rect class="box" x="682" y="176" width="238" height="48" rx="12"/><text class="dt" x="801" y="205" text-anchor="middle">get_failure_history</text></g><rect class="box mute rise" x="20" y="212" width="622" height="46" rx="12"/><text class="ds" x="331" y="240" text-anchor="middle">El gateway comprueba: la herramienta existe · los argumentos tienen el tipo correcto</text><text class="dm" x="20" y="28">AGENTE → HERRAMIENTAS</text></svg></div><figcaption><b>Figura 3.</b> Hay un solo camino hacia las herramientas, y por eso hay un solo lugar donde endurecer. Las listas permitidas, la autorización y la firma de llamadas se añaden en ese gateway en la Sesión 2, sin tocar al agente.</figcaption></figure><div class="trio"><div class="tile"><div class="tag">Descubrimiento</div><h5>Lista las 3 herramientas</h5><p>El catálogo sale del servidor, no de una lista escrita en el agente.</p></div><div class="tile"><div class="tag">Validación</div><h5>Argumentos con tipo</h5><p>Un <code>equipment_id</code> ausente o un tipo incorrecto da un error de validación.</p></div><div class="tile"><div class="tag">Rechazo</div><h5>Herramienta inexistente</h5><p>Una petición de <code>delete_everything</code> se rechaza antes de ejecutarse.</p></div></div>
+</section>
+
+<section id="s8" data-grp="Razonamiento y memoria" data-nav="Del one-shot al grafo">
+<p class="eyebrow">08 · V04 · LangGraph</p>
+<h3>Un diagnóstico real es un ciclo, y un ciclo conviene dibujarlo como grafo</h3>
+<p class="lead">Se razona, se descubre que falta un dato, se consulta una herramienta y se razona de nuevo. Eso no cabe en una sola llamada al LLM. Hace falta un flujo explícito, con un límite.</p>
+<p>LangGraph modela el agente como nodos y aristas. Cada nodo hace una cosa (cargar, recuperar, razonar, usar herramientas, diagnosticar, guardar) y las aristas, incluida la condicional que decide si falta evidencia, son código revisable. La alternativa, un bucle de “llama al modelo hasta que diga que terminó”, esconde el control de flujo dentro del texto.</p><figure class="stepfig"><div class="canvas"><svg viewBox="0 0 940 300" role="img" aria-label="Grafo de diagnóstico: cargar incidente, recuperar historial, razonar, decidir si falta evidencia, llamar herramienta y volver, diagnosticar y guardar."><g data-s="0"><g><rect class="box" x="20" y="100" width="116" height="60" rx="12"/><text class="dt" x="78" y="127" text-anchor="middle">Cargar</text><text class="ds" x="78" y="145" text-anchor="middle">INC-204</text></g></g><g data-s="1"><path class="ln on flow" d="M138 130 H155"/><polygon points="154,124 166,130 154,136" fill="#FF7A50"/><g><rect class="box" x="168" y="100" width="116" height="60" rx="12"/><text class="dt" x="226" y="127" text-anchor="middle">Recuperar</text><text class="ds" x="226" y="145" text-anchor="middle">historial (RAG)</text></g><path class="ln on flow" d="M286 130 H303"/><polygon points="302,124 314,130 302,136" fill="#FF7A50"/><g><rect class="box" x="316" y="100" width="116" height="60" rx="12"/><text class="dt" x="374" y="127" text-anchor="middle">Razonar</text><text class="ds" x="374" y="145" text-anchor="middle">LLM / mock</text></g></g><g data-s="2"><path class="ln on flow" d="M434 130 H453"/><polygon points="452,124 464,130 452,136" fill="#FF7A50"/><polygon class="box hi" points="528,92 590,130 528,168 466,130"/><text class="ds" x="528" y="134" text-anchor="middle">¿falta evidencia?</text></g><g data-s="3"><path class="ln on flow" d="M528 170 V203"/><polygon points="522,202 528,214 534,202" fill="#FF7A50"/><text class="dm" x="540" y="196" fill="#6FD3C7">SÍ</text><g><rect class="box" x="468" y="216" width="120" height="56" rx="12"/><text class="dt" x="528" y="241" text-anchor="middle">Herramienta</text><text class="ds" x="528" y="259" text-anchor="middle">MCP vía gateway</text></g><path class="ln on dash flow" d="M466 244 H374 V162"/><polygon points="368,174 374,162 380,174" fill="#FF7A50"/><text class="ds" x="604" y="240" fill="#F0B85C">max_steps corta el ciclo</text></g><g data-s="4"><path class="ln on flow" d="M592 130 H629"/><polygon points="628,124 640,130 628,136" fill="#FF7A50"/><text class="dm" x="612" y="118" text-anchor="middle" fill="#6FD3C7">NO</text><g><rect class="box" x="642" y="100" width="116" height="60" rx="12"/><text class="dt" x="700" y="127" text-anchor="middle">Diagnóstico</text><text class="ds" x="700" y="145" text-anchor="middle">resultado tipado</text></g><path class="ln on flow" d="M760 130 H779"/><polygon points="778,124 790,130 778,136" fill="#FF7A50"/><g><rect class="box hi" x="792" y="100" width="116" height="60" rx="12"/><text class="dt" x="850" y="127" text-anchor="middle" fill="#FFB496">Guardar</text><text class="ds" x="850" y="145" text-anchor="middle">agent_runs</text></g></g></svg></div><div class="deck"><div class="cards"><article class="card on"><span class="step">Paso 1 de 5</span><h5>Se carga el incidente</h5><p>El grafo parte leyendo <code>INC-204</code> del almacén. Si ya existe, trae su estado: observaciones, hipótesis y ejecuciones previas. Así una segunda consulta continúa el caso en lugar de empezar de cero.</p></article><article class="card"><span class="step">Paso 2 de 5</span><h5>Se recupera historial y se razona</h5><p>El nodo RAG aporta fallas parecidas con su <code>source_id</code>. El nodo de razonamiento llama al LLM, o al mock en pruebas, con el incidente y esa evidencia, y devuelve hipótesis, comprobaciones recomendadas y, si le falta algo, pedidos de herramienta.</p></article><article class="card"><span class="step">Paso 3 de 5</span><h5>Una decisión explícita</h5><p>La bifurcación ¿falta evidencia? es una arista condicional del grafo, no una frase dentro de un prompt. Se puede leer, probar y depurar. Con un solo LLM llamado en bucle, esa decisión quedaría escondida en texto.</p></article><article class="card"><span class="step">Paso 4 de 5</span><h5>La herramienta alimenta otra vuelta</h5><p>Si falta un dato actual, el nodo de herramientas llama al MCP a través del gateway y vuelve a razonar con la nueva observación. Cada vuelta cuesta tiempo y tokens, por eso <code>max_steps</code> es un tope duro: 3 pasos en <code>/quick</code>, 8 en <code>/extended</code>.</p></article><article class="card"><span class="step">Paso 5 de 5</span><h5>Se diagnostica y se guarda</h5><p>Con evidencia suficiente, o con el tope agotado, el grafo emite el diagnóstico y persiste la ejecución. La respuesta distingue observaciones de hipótesis y, si el tope cortó el ciclo, lo dice con el estado <code>max_steps_reached</code> en vez de aparentar certeza.</p></article></div><div class="ctrls"><div class="dots"></div><button class="btn ghost sm prev" type="button">Anterior</button><button class="btn sm next" type="button">Siguiente</button></div></div></figure><div class="note warn"><b>El tope es una decisión de costo y de seguridad</b><p>Un agente sin <code>max_steps</code> puede entrar en un bucle que cueste dinero y no termine. La prueba usa un mock que pide herramientas sin parar y comprueba que el grafo termina en el tope.</p></div>
+</section>
+
+<section id="s9" data-grp="Razonamiento y memoria" data-nav="Hechos e hipótesis">
+<p class="eyebrow">09 · V04 · Estado</p>
+<h3>Una hipótesis guardada como hecho contamina todas las respuestas futuras</h3>
+<p class="lead">El modelo infiere; los sensores miden. Si ambas cosas se guardan en el mismo sitio, la siguiente consulta no podrá distinguir qué es dato y qué es conjetura.</p>
+<p>Imagina que en la primera consulta el modelo sugiere “desgaste de rodamiento” y esa frase se almacena como observación. Mañana, el agente la leerá como un hecho verificado de INC-204 y razonará sobre ella como si alguien lo hubiera medido. Cada ciclo la refuerza. Por eso el esquema tiene tablas separadas y la hipótesis solo puede <em class="q">citar</em> observaciones, con su <code>confidence</code> y sus <code>evidence_ids</code>.</p><figure><div class="canvas"><svg viewBox="0 0 940 260" role="img" aria-label="Dos tablas separadas: observaciones medidas por sensores e hipótesis inferidas por el modelo, que citan a las observaciones como evidencia."><rect class="box rise" x="20" y="22" width="400" height="214" rx="14"/><text class="dt" x="44" y="54">Observaciones · hechos</text><text class="dm" x="44" y="74">TABLA observations</text><text class="ds" x="44" y="108">Temperatura del rodamiento</text><text class="dc" x="396" y="108" text-anchor="end">86 °C</text><text class="ds" x="44" y="138">Vibración</text><text class="dc" x="396" y="138" text-anchor="end">8.4 mm/s</text><text class="ds" x="44" y="168">Presión de descarga</text><text class="dc" x="396" y="168" text-anchor="end">2.8 bar</text><text class="dm" x="44" y="214">origen: get_sensor_readings (MCP)</text><rect class="box hi rise" x="500" y="22" width="420" height="214" rx="14"/><text class="dt" x="524" y="54" fill="#FFB496">Hipótesis · inferencias</text><text class="dm" x="524" y="74">TABLA hypotheses</text><text class="ds" x="524" y="108">cause: bearing_wear</text><text class="ds" x="524" y="138">confidence: entre 0 y 1</text><text class="ds" x="524" y="168">evidence_ids → citas y observaciones</text><text class="dm" x="524" y="214">origen: razonamiento del modelo</text><path class="ln on flow" d="M498 129 H433"/><polygon points="432,123 420,129 432,135" fill="#FF7A50"/><text class="dm" x="459" y="112" text-anchor="middle">CITA</text></svg></div><figcaption><b>Figura 4.</b> La flecha va de la hipótesis hacia el hecho, nunca al revés. Una hipótesis puede apoyarse en una medición, pero ninguna inferencia puede escribirse como si fuera una medición. Los valores del escenario son ficticios.</figcaption></figure><div class="note"><b>Se guardan decisiones, no pensamientos</b><p>Se persisten observaciones, hipótesis con su evidencia y el resultado de cada ejecución. No se guarda el razonamiento interno privado del modelo: no es auditable y no hace falta para reanudar el caso.</p></div>
+</section>
+
+<section id="s10" data-grp="Razonamiento y memoria" data-nav="Reanudar INC-204">
+<p class="eyebrow">10 · V04 · Memoria</p>
+<h3>Un incidente que se puede reanudar es un incidente que se puede auditar</h3>
+<p class="lead">La segunda consulta sobre INC-204 empieza donde terminó la primera. Lo que antes eran dos conversaciones sueltas pasa a ser un historial del caso.</p>
+<p>El <em class="q">Memory Gateway</em> es la única puerta de lectura y escritura sobre el estado. Guarda en cuatro tablas: <code>incidents</code>, <code>agent_runs</code>, <code>observations</code> y <code>hypotheses</code>. Al volver sobre el incidente, el nodo de carga entrega al razonamiento las hipótesis previas, y la respuesta indica que fue una reanudación (<code>resumed</code>) y cuántas ejecuciones había (<code>prior_run_count</code>).</p><div class="duo"><div class="tile"><div class="tag">Estado por solicitud</div><h5>Sin memoria compartida</h5><p>El estado vive en el almacén, no en variables globales del proceso. Dos peticiones simultáneas no se pisan, y Lambda, que no conserva memoria entre invocaciones, funciona igual.</p></div><div class="tile"><div class="tag">Dos almacenes</div><h5>memory y supabase</h5><p>En local el almacén está en memoria; en el entorno real es Postgres en Supabase. Ambos cumplen la misma interfaz y los mismos tests.</p></div></div><p>Dos solicitudes sobre el mismo incidente están cubiertas por un test: la segunda debe ver lo que guardó la primera. Otro comprueba que las hipótesis del turno anterior llegan al LLM como contexto y no como hechos.</p>
+</section>
+
+<section id="s11" data-grp="Despliegue" data-nav="Un núcleo, dos arranques">
+<p class="eyebrow">11 · V05 · Runtime</p>
+<h3>Cambia la forma de arrancar, no el programa</h3>
+<p class="lead">Lambda y EC2 ejecutan el mismo <code>app/</code>. Lo único distinto es el adaptador de entrada, el Dockerfile y la ruta de API Gateway.</p>
+<p>En Lambda, <strong>Mangum</strong> adapta los eventos de API Gateway a una aplicación ASGI: <code>handlers/lambda_api.py</code> son dos líneas que envuelven la misma <code>app</code> de FastAPI. En EC2, <strong>Uvicorn</strong> sirve esa app dentro de un contenedor Docker. Un test de paridad envía la misma petición por ambos caminos y exige la misma respuesta.</p><figure><div class="canvas"><svg viewBox="0 0 940 310" role="img" aria-label="API Gateway enruta /diagnose/quick a Lambda y /diagnose/extended a EC2; ambos ejecutan el mismo núcleo app/, que usa Supabase, OpenAI y el Tool Gateway."><g class="rise"><rect class="box" x="20" y="104" width="140" height="62" rx="12"/><text class="dt" x="90" y="132" text-anchor="middle">API Gateway</text><text class="ds" x="90" y="150" text-anchor="middle">rutas explícitas</text></g><path class="ln on flow" d="M162 135 H206 V72 H240"/><path class="ln on flow" d="M206 135 V198 H240"/><polygon points="228,66 240,72 228,78" fill="#FF7A50"/><polygon points="228,192 240,198 228,204" fill="#FF7A50"/><g class="rise"><rect class="box" x="242" y="42" width="210" height="62" rx="12"/><text class="dt" x="347" y="70" text-anchor="middle">Lambda + Mangum</text><text class="ds" x="347" y="88" text-anchor="middle">/diagnose/quick</text></g><g class="rise"><rect class="box" x="242" y="168" width="210" height="62" rx="12"/><text class="dt" x="347" y="196" text-anchor="middle">EC2 + Uvicorn</text><text class="ds" x="347" y="214" text-anchor="middle">/diagnose/extended</text></g><path class="ln on flow" d="M454 73 H494 V135 H524"/><path class="ln on flow" d="M454 199 H494 V135"/><polygon points="512,129 524,135 512,141" fill="#FF7A50"/><rect class="box hi rise" x="526" y="60" width="394" height="150" rx="14"/><text class="dt" x="723" y="100" text-anchor="middle" fill="#FFB496">app/ · un solo núcleo</text><text class="ds" x="723" y="126" text-anchor="middle">FastAPI + DiagnosisService + LangGraph</text><text class="ds" x="723" y="150" text-anchor="middle">mismas rutas, mismos modelos, mismos tests</text><text class="dm" x="723" y="186" text-anchor="middle">solo cambian el arranque y el empaquetado</text><text class="dm" x="20" y="28">ENTRADA</text><text class="dm" x="242" y="28">RUNTIME</text><text class="dm" x="526" y="28">NÚCLEO</text><path class="ln dash" d="M723 212 V250"/><g class="rise"><rect class="box" x="526" y="252" width="118" height="44" rx="12"/><text class="dt" x="585" y="279" text-anchor="middle">Supabase</text></g><g class="rise"><rect class="box" x="656" y="252" width="118" height="44" rx="12"/><text class="dt" x="715" y="279" text-anchor="middle">OpenAI</text></g><g class="rise"><rect class="box" x="786" y="252" width="134" height="44" rx="12"/><text class="dt" x="853" y="279" text-anchor="middle">Tool Gateway</text></g></svg></div><figcaption><b>Figura 5.</b> Lo importante es la convergencia: dos formas de arrancar, un solo programa. Si alguna vez una lógica de negocio aparece dentro de <code>handlers/lambda_api.py</code>, el núcleo dejó de ser compartido.</figcaption></figure><table><tr><th>Aspecto</th><th>Lambda</th><th>EC2</th></tr><tr><td><strong>Punto de entrada</strong></td><td><code>handlers/lambda_api.py</code> (Mangum)</td><td>Uvicorn</td></tr><tr><td><strong>Imagen</strong></td><td><code>Dockerfile.lambda</code></td><td><code>Dockerfile.ec2</code></td></tr><tr><td><strong>Ruta</strong></td><td><code>/diagnose/quick</code> · 3 pasos del grafo</td><td><code>/diagnose/extended</code> · 8 pasos del grafo</td></tr><tr><td><strong>Lógica de negocio</strong></td><td colspan="2">Idéntica: está en <code>app/</code></td></tr></table>
+</section>
+
+<section id="s12" data-grp="Despliegue" data-nav="Cómo elegir runtime">
+<p class="eyebrow">12 · V05 · Decisión</p>
+<h3>Lambda es un taxi y EC2 es un auto propio: la pregunta es cuánto lo usas</h3>
+<p class="lead">Con Lambda pagas el viaje y no mantienes nada. Con EC2 tienes el auto siempre disponible, pero lo pagas y lo mantienes aunque esté estacionado.</p>
+<table><tr><th>Criterio</th><th>Lambda</th><th>EC2</th></tr><tr><td><strong>Tráfico irregular, solicitudes breves</strong></td><td>Preferida</td><td>Posible, con capacidad encendida todo el tiempo</td></tr><tr><td><strong>Ejecución individual de más de 15 min</strong></td><td>No</td><td>Sí</td></tr><tr><td><strong>Servidor MCP remoto persistente</strong></td><td>Requiere adaptar transporte y sesión</td><td>Conveniente</td></tr><tr><td><strong>Escalado</strong></td><td>Gestionado, con cuotas</td><td>Hay que configurarlo (grupo de autoescalado, balanceador)</td></tr><tr><td><strong>Mantenimiento</strong></td><td>Menor</td><td>Mayor: sistema operativo, contenedores, parches</td></tr><tr><td><strong>Costo</strong></td><td>Por invocación y duración</td><td>Por instancia aprovisionada</td></tr></table><p>La decisión del taller es Lambda como camino principal para consultas cortas y EC2 como demostración del mismo backend en forma de servicio persistente. API Gateway no adivina la duración de una consulta: la ruta que llama el cliente (<code>/diagnose/quick</code> o <code>/diagnose/extended</code>) es la que decide el destino, y también el presupuesto de pasos del grafo.</p><div class="note stop"><b>Nunca dejes una Lambda esperando a una persona</b><p>Si un diagnóstico necesita esperar una aprobación humana, no se mantiene la invocación abierta: se paga por esperar y se choca con el límite de 15 minutos. El estado se persiste y el flujo se reanuda cuando llega la aprobación. Para eso sirve la memoria de la sección 10.</p></div><div class="note warn"><b>No ejecutes dos orquestadores para la misma petición</b><p>Si una petición pasa por Lambda y por EC2 a la vez, tendrás ejecuciones duplicadas, costos duplicados y estado inconsistente. Una ruta, un destino.</p></div>
+</section>
+
+<section id="s13" data-grp="Cierre" data-nav="Qué está verificado">
+<p class="eyebrow">13 · Evidencia</p>
+<h3>Lo que está probado, lo que no, y por qué importa decirlo</h3>
+<p class="lead">Un agente que “parece funcionar” no es lo mismo que uno con pruebas. Esta sesión se apoya en tests que corren sin red; lo que requiere infraestructura real se declara aparte.</p>
+<table><tr><th>Versión</th><th>Qué demuestra</th><th>Archivo de pruebas</th></tr><tr><td><strong>V01</strong></td><td>Respuesta estructurada, entrada inválida rechazada, fallo del LLM como 503, clave ausente falla rápido</td><td><code>tests/unit/test_v01_diagnose.py</code></td></tr><tr><td><strong>V02</strong></td><td>Fallas de bombas con <code>source_id</code>, nunca otra planta, cita inventada descartada</td><td><code>tests/unit/test_v02_rag.py</code></td></tr><tr><td><strong>V03</strong></td><td>Tres herramientas, valores de P-204, llamadas inválidas rechazadas</td><td><code>tests/unit/test_v03_tools.py</code></td></tr><tr><td><strong>V04</strong></td><td>INC-204 se reanuda, <code>max_steps</code> corta, hipótesis ≠ observaciones</td><td><code>tests/unit/test_v04_graph.py</code></td></tr><tr><td><strong>V05</strong></td><td>Misma respuesta por Lambda y por EC2</td><td><code>tests/integration/test_v05_runtime_parity.py</code></td></tr></table><p>Al cierre de esta versión del material, las pruebas de la Sesión 1 dieron <strong>36 aprobadas</strong> y la suite completa del repositorio <strong>123 aprobadas y 5 omitidas</strong>. Las omitidas son las del almacén Postgres con pgvector, que necesitan una base real (<code>TEST_DATABASE_URL</code>).</p><div class="note warn"><b>Lo que no se ha medido</b><p>Ningún despliegue real a AWS se ha ejecutado, y por eso no existen aún latencias ni costos medidos de Lambda frente a EC2. Los valores de latencia de los reportes salen del modo mock. La comparación de esta sesión es cualitativa hasta que haya mediciones en AWS.</p></div>
+</section>
+
+<section id="s14" data-grp="Cierre" data-nav="Stack y siguiente sesión">
+<p class="eyebrow">14 · Preparación</p>
+<h3>La Sesión 2 asume que alguien intentará engañar a este agente</h3>
+<p class="lead">Lo construido hoy funciona, pero confía en todo: en el texto de los documentos, en los argumentos del modelo y en quien llama a la API. La siguiente sesión quita esa confianza capa por capa.</p>
+<div class="links"><a href="https://www.python.org/downloads/" target="_blank" rel="noopener"><div class="ic">&#128013;</div><div><b>Python 3.12+</b><span>python.org/downloads</span></div></a><a href="https://docs.docker.com/get-docker/" target="_blank" rel="noopener"><div class="ic">&#128051;</div><div><b>Docker</b><span>docs.docker.com/get-docker</span></div></a><a href="https://fastapi.tiangolo.com/" target="_blank" rel="noopener"><div class="ic">&#9889;</div><div><b>FastAPI</b><span>fastapi.tiangolo.com</span></div></a><a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener"><div class="ic">&#128279;</div><div><b>LangGraph</b><span>langchain-ai.github.io/langgraph</span></div></a><a href="https://modelcontextprotocol.io/" target="_blank" rel="noopener"><div class="ic">&#128295;</div><div><b>Model Context Protocol</b><span>modelcontextprotocol.io</span></div></a><a href="https://supabase.com/docs" target="_blank" rel="noopener"><div class="ic">&#128451;</div><div><b>Supabase</b><span>supabase.com/docs</span></div></a></div><table><tr><th>Sesión</th><th>Tema</th><th>Versiones</th><th>Qué aporta</th></tr><tr><td><strong>1 · AI Architecture</strong></td><td><strong>Un agente que funciona de punta a punta</strong></td><td><strong>V01–V05</strong></td><td><strong>Endpoint, RAG, MCP, grafo con memoria, despliegue</strong></td></tr><tr><td>2 · AI Security</td><td>Un agente que resiste el abuso</td><td>V06–V10</td><td>Prompt injection, JWT y RBAC, secretos, acciones aprobadas, CI de seguridad</td></tr><tr><td>3 · AI Governance</td><td>Un agente gobernable y medible</td><td>V11–V15</td><td>Políticas de riesgo, evaluación, observabilidad, Terraform y CI/CD, caso completo</td></tr></table>
+</section>
+
+<section id="s15" data-grp="Cierre" data-nav="Recursos y materiales">
+<p class="eyebrow">15 · Material</p>
+<h3>Recursos y materiales de la sesión</h3>
+<p class="lead">Esta sesión no trae enlaces de Drive ni scripts embebidos. Todo el material vive en el repositorio; aquí se indica dónde está cada pieza y cómo ejecutarla.</p>
+<div class="res"><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>labs/V01 … labs/V05</b><span>Un README por versión, con diagrama, archivos principales, comando de prueba y criterio de aceptación.</span></span><span class="go">repo</span></div><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>implementation_plan/05-sesion-1-architecture/</b><span>Guion detallado de la sesión: problema, idea, qué se construye, errores comunes y verificación de cada versión.</span></span><span class="go">repo</span></div><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>docs/architecture/lambda-vs-ec2.md</b><span>Comparación escrita de Lambda y EC2 con las limitaciones de cada una.</span></span><span class="go">repo</span></div><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>README.md</b><span>Comandos de instalación, carga de datos, ejecución, pruebas y construcción de imágenes.</span></span><span class="go">repo</span></div></div><div class="note"><b>Cómo ejecutarlo</b><p>Crea el entorno con <code>python3 -m venv .venv &amp;&amp; .venv/bin/pip install -e ".[dev]"</code>, copia <code>.env.example</code> a <code>.env</code> (por defecto todo queda en modo mock) y corre <code>.venv/bin/python -m pytest</code>. Para ver un diagnóstico: <code>.venv/bin/uvicorn app.api.main:app</code> y una petición con un JWT local de <code>scripts/mint_token.py</code>. Los temas 02 y 03 explican qué cambia si activas OpenAI.</p></div>
+</section>
+
+<section id="s-quiz" data-grp="Cierre" data-nav="Cuestionario final">
+    <p class="eyebrow">16 · Autoevaluación</p>
+    <h3>Cuestionario final</h3>
+    <p class="lead">Seis preguntas sobre los temas centrales de la sesión. Cada respuesta se explica al momento, así que sirve tanto para medirte como para repasar. Puedes repetirlo las veces que quieras.</p>
+    <div class="quiz">
+      <div class="qtop">
+        <div class="idx" id="q-idx">Pregunta 1<small>de 6</small></div>
+        <div class="pips" id="q-pips"></div>
+        <span class="score" id="q-score">0 correctas</span>
+      </div>
+      <div class="qbody" id="q-body"></div>
+      <div class="qfoot" id="q-foot"></div>
+    </div>
+    <div class="note" style="margin-top:30px">
+      <b>Para llevarte a casa</b>
+      <p>La ruta delega en un servicio, y el servicio habla con una interfaz, no con OpenAI. El historial recuperado aporta evidencia citable y las herramientas MCP aportan el presente, siempre a través de un único gateway. El grafo itera hasta tener evidencia o agotar <code>max_steps</code>, guarda hechos e hipótesis por separado y el mismo núcleo arranca en Lambda o en EC2. Nada de esto es seguro todavía: la Sesión 2 empieza por asumir que alguien intentará engañarlo.</p>
+    </div>
+    <div class="foot">
+      <span>Datapath · AI Architecture, Security &amp; Governance</span>
+      <span>Sesión 1 de 3 · Sesión 1 · AI Architecture</span>
+    </div>
+  </section>
+
+  </div>
+</main>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var secs=[].slice.call(document.querySelectorAll("section"));
+
+  /* temario */
+  var last="",html="";
+  secs.forEach(function(s,i){
+    if(s.dataset.grp!==last){last=s.dataset.grp;html+='<div class="grp">'+last+'</div>';}
+    html+='<a href="#'+s.id+'" data-t="'+s.id+'"><span class="n">'+String(i+1).padStart(2,"0")+'</span><span>'+s.dataset.nav+'</span></a>';
+  });
+  $("toc").innerHTML=html;
+  var links=[].slice.call($("toc").querySelectorAll("a"));
+  links.forEach(function(a){a.addEventListener("click",function(){document.body.classList.remove("open");});});
+  $("menu").addEventListener("click",function(){document.body.classList.toggle("open");});
+  $("go").addEventListener("click",function(){$("s-quiz").scrollIntoView({behavior:"smooth"});});
+
+  /* seguimiento de lectura */
+  if(typeof IntersectionObserver!=="undefined"){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting)return;
+        links.forEach(function(a){a.classList.toggle("on",a.dataset.t===e.target.id);});
+        var i=secs.indexOf(e.target);
+        $("where").textContent=e.target.dataset.grp+" — "+e.target.dataset.nav;
+        $("rule").style.width=Math.round((i+1)/secs.length*100)+"%";
+      });
+    },{rootMargin:"-12% 0px -72% 0px",threshold:0});
+    secs.forEach(function(s){io.observe(s);});
+  }
+
+  /* cuestionario */
+  /* === BANCO DE PREGUNTAS · sustituir por las 6 de esta sesión === */
+  var Q=[
+ {
+  "tag": "Proveedor intercambiable",
+  "q": "Un compañero propone llamar a OpenAI directamente desde la ruta POST /diagnose “para ahorrar una capa”. ¿Qué pierdes de forma más concreta?",
+  "o": [
+   "Velocidad: cada capa añade una latencia perceptible por el técnico.",
+   "La posibilidad de probar sin red y de cambiar de proveedor sin tocar la lógica del caso.",
+   "Compatibilidad con Pydantic, que solo funciona dentro de servicios.",
+   "El soporte de Uvicorn, que exige una capa de servicio."
+  ],
+  "ok": 1,
+  "why": "La capa de servicio y la interfaz son lo que permite sustituir el proveedor real por un mock determinista y reutilizar la lógica desde Lambda. El costo de latencia de una llamada a función es despreciable frente a la llamada al modelo; el costo real de acoplar la ruta aparece cuando hay que probar, cambiar de proveedor o reutilizar."
+ },
+ {
+  "tag": "RAG y citas",
+  "q": "El LLM devuelve una cita con source_id FH-999, que no aparece entre los fragmentos que recuperó el retriever. ¿Qué debe hacer el servicio?",
+  "o": [
+   "Aceptarla si el formato del identificador es válido.",
+   "Descartarla, porque toda cita debe provenir de lo recuperado.",
+   "Pedirle al propio LLM que confirme que existe.",
+   "Guardarla marcada con baja confianza para revisarla después."
+  ],
+  "ok": 1,
+  "why": "Un identificador con buen formato no prueba que la fuente exista. Preguntarle al modelo si “recuerda” una fuente es pedirle que se autovalide. La regla es verificable: la cita está o no está entre los fragmentos recuperados, y si no está, se elimina."
+ },
+ {
+  "tag": "Filtro antes de buscar",
+  "q": "¿Por qué el filtro por planta y equipo se aplica dentro de la consulta vectorial y no sobre los resultados ya obtenidos?",
+  "o": [
+   "Porque la similitud coseno solo funciona bien con subconjuntos pequeños.",
+   "Para ahorrar el costo de calcular el embedding de la consulta.",
+   "Porque lo que nunca se busca no puede filtrarse por error hacia el contexto del modelo ni hacia la respuesta.",
+   "Porque el modelo de lenguaje ignora cualquier instrucción de filtrado."
+  ],
+  "ok": 2,
+  "why": "Filtrar al final obliga a que un código posterior acierte siempre al limpiar; filtrar en la búsqueda hace que los documentos de otra planta no entren. El embedding se calcula igual en ambos casos, y la similitud no depende del tamaño del subconjunto."
+ },
+ {
+  "tag": "Tool Gateway",
+  "q": "El modelo pide la herramienta delete_everything. ¿Qué evita realmente que se ejecute?",
+  "o": [
+   "El mensaje del sistema le indica que no use herramientas destructivas.",
+   "El servidor MCP está en una red privada.",
+   "El gateway solo admite herramientas descubiertas en el catálogo y valida los argumentos antes de llamar.",
+   "El LLM está configurado en modo mock."
+  ],
+  "ok": 2,
+  "why": "Una instrucción en el prompt es una petición, no un control: el modelo puede ignorarla o ser manipulado. El control real es código determinista en el gateway. Esta sesión valida existencia y tipos; la Sesión 2 añade autorización, listas permitidas y firma."
+ },
+ {
+  "tag": "Hechos e hipótesis",
+  "q": "Tras la primera consulta sobre INC-204 el modelo sugiere “desgaste de rodamiento”. ¿Dónde debe guardarse y por qué?",
+  "o": [
+   "En observations, para que la próxima consulta lo tenga disponible como dato.",
+   "En ambas tablas, para no perder información si una falla.",
+   "En ninguna: las inferencias del modelo no deben persistirse.",
+   "En hypotheses, con su confianza y su evidencia; en observations la siguiente consulta lo trataría como una medición."
+  ],
+  "ok": 3,
+  "why": "Persistir la hipótesis es correcto, porque permite reanudar el caso. Lo peligroso es mezclarla con las mediciones. Guardarla en ambas tablas reproduce el mismo problema, y no guardarla impide que el incidente se retome con contexto."
+ },
+ {
+  "tag": "Lambda frente a EC2",
+  "q": "Un diagnóstico debe esperar horas la aprobación de un supervisor. ¿Cómo se resuelve en Lambda?",
+  "o": [
+   "Subiendo el timeout de la función al máximo permitido.",
+   "Persistiendo el estado y reanudando el flujo cuando llegue la aprobación, sin mantener la invocación abierta.",
+   "Moviendo todo el servicio a EC2 y dejando el proceso esperando.",
+   "Reintentando la invocación cada minuto hasta que haya respuesta."
+  ],
+  "ok": 1,
+  "why": "El máximo de Lambda son 15 minutos, así que aunque subas el timeout no alcanza para esperar horas, y pagarías por esperar. EC2 resolvería el límite pero no el desperdicio. Persistir y reanudar sirve en cualquier runtime, y es lo que el estado de la sección 10 hace posible."
+ }
+];
+  var L=["A","B","C","D"],i=0,ok=0,marks=[],locked=false;
+  var body=$("q-body"),foot=$("q-foot"),idx=$("q-idx"),score=$("q-score"),pips=$("q-pips");
+  function drawPips(){
+    var h="";
+    for(var k=0;k<Q.length;k++){
+      var c=marks[k]===1?"ok":(marks[k]===0?"no":(k===i?"now":""));
+      h+='<i class="'+c+'"></i>';
+    }
+    pips.innerHTML=h;
+  }
+  function paint(){
+    locked=false;var it=Q[i];
+    idx.innerHTML="Pregunta "+(i+1)+"<small>de "+Q.length+"</small>";
+    score.textContent=ok+" correctas";
+    drawPips();
+    body.innerHTML='<p class="qtag">'+it.tag+'</p><p class="qq">'+it.q+'</p><div class="opts" id="opts">'+
+      it.o.map(function(o,k){return '<button class="opt" data-k="'+k+'"><span class="k">'+L[k]+'</span><span>'+o+'</span></button>';}).join("")+
+      '</div><div class="fb" id="fb"></div>';
+    foot.innerHTML='<span class="hint">Elige una opción para ver la explicación</span>';
+    [].slice.call(document.querySelectorAll("#opts .opt")).forEach(function(b){
+      b.addEventListener("click",function(){answer(+b.dataset.k);});
+    });
+  }
+  function answer(k){
+    if(locked)return;locked=true;
+    var it=Q[i],good=k===it.ok;
+    marks[i]=good?1:0;
+    if(good)ok++;else it.mine=it.o[k];
+    [].slice.call(document.querySelectorAll("#opts .opt")).forEach(function(b,n){
+      b.disabled=true;
+      b.classList.add(n===it.ok?"right":(n===k?"wrong":"off"));
+    });
+    var fb=$("fb");
+    fb.className="fb show "+(good?"y":"n");
+    fb.innerHTML="<b>"+(good?"Correcto":"Revisa esto")+"</b>"+it.why;
+    score.textContent=ok+" correctas";
+    drawPips();
+    foot.innerHTML='<span class="hint">'+(i+1)+" de "+Q.length+'</span><button class="btn" id="next">'+(i===Q.length-1?"Ver resultado":"Siguiente pregunta")+'</button>';
+    $("next").addEventListener("click",function(){
+      if(i===Q.length-1)result();else{i++;paint();}
+    });
+  }
+  function result(){
+    var p=Math.round(ok/Q.length*100),msg;
+    if(p>=84)msg="Tienes clara la composición del agente: capas con interfaz, evidencia citable, herramientas validadas, estado separado entre hechos e hipótesis y un núcleo desplegable en dos runtimes. Estás listo para la Sesión 2.";
+    else if(p>=60)msg="Buena base. Vuelve a los temas de las preguntas que fallaste antes de repetir el cuestionario.";
+    else msg="Conviene repasar. Revisa otra vez los temas 02, 05, 07 y 09: sostienen casi todo lo que se ataca y se protege en la Sesión 2.";
+    idx.innerHTML="Resultado<small>cuestionario completo</small>";
+    var wrong=Q.filter(function(it,k){return marks[k]===0;});
+    body.innerHTML='<div class="result"><div class="big">'+ok+'</div><div class="of">de '+Q.length+' · '+p+'% correcto</div>'+
+      '<div class="msg">'+msg+'</div>'+
+      (wrong.length?'<div class="review"><p class="qtag">Para repasar</p>'+wrong.map(function(w){
+        return '<div class="item"><b>'+w.q+'</b><span class="bad">Tu respuesta: '+(w.mine||"")+'</span><br><span class="good">Correcta: '+w.o[w.ok]+'</span></div>';
+      }).join("")+'</div>':"")+'</div>';
+    foot.innerHTML='<span class="hint">'+Q.length+' de '+Q.length+'</span><button class="btn" id="again">Repetir</button><button class="btn ghost" id="top">Volver al inicio</button>';
+    $("again").addEventListener("click",function(){i=0;ok=0;marks=[];Q.forEach(function(x){delete x.mine;});paint();});
+    $("top").addEventListener("click",function(){$("s1").scrollIntoView({behavior:"smooth"});});
+  }
+  paint();
+})();
+</script>
+
+<script>
+(function(){
+  /* --- animación de figuras al entrar en pantalla --- */
+  var figs=[].slice.call(document.querySelectorAll("figure"));
+  figs.forEach(function(f){
+    [].slice.call(f.querySelectorAll(".rise")).forEach(function(el,k){
+      el.style.transitionDelay=Math.min(k,16)*45+"ms";
+    });
+  });
+  if(typeof IntersectionObserver!=="undefined"){
+    var fio=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){e.target.classList.add("in");fio.unobserve(e.target);}
+      });
+    },{rootMargin:"0px 0px -10% 0px",threshold:.15});
+    figs.forEach(function(f){fio.observe(f);});
+    setTimeout(function(){
+      if(!document.querySelector("figure.in"))figs.forEach(function(f){f.classList.add("in");});
+    },2500);
+  }else figs.forEach(function(f){f.classList.add("in");});
+
+
+  /* --- recursos: desplegar scripts y copiarlos --- */
+  [].slice.call(document.querySelectorAll(".rescard.code")).forEach(function(card){
+    var head=card.querySelector(".reshead"),chev=card.querySelector(".chev"),
+        copy=card.querySelector(".copy"),code=card.querySelector("code");
+    head.addEventListener("click",function(){
+      var open=card.classList.toggle("open");
+      head.setAttribute("aria-expanded",String(open));
+      chev.textContent=open?"Ocultar":"Ver código";
+    });
+    copy.addEventListener("click",function(e){
+      e.stopPropagation();
+      var txt=code.textContent;
+      function done(){
+        copy.textContent="Copiado";copy.classList.add("ok");
+        setTimeout(function(){copy.textContent="Copiar";copy.classList.remove("ok");},1800);
+      }
+      function fallback(){
+        var ta=document.createElement("textarea");
+        ta.value=txt;ta.setAttribute("readonly","");
+        ta.style.position="fixed";ta.style.top="-1000px";ta.style.opacity="0";
+        document.body.appendChild(ta);ta.select();
+        try{document.execCommand("copy");done();}catch(err){copy.textContent="Copia manual";}
+        document.body.removeChild(ta);
+      }
+      if(navigator.clipboard&&navigator.clipboard.writeText)
+        navigator.clipboard.writeText(txt).then(done,fallback);
+      else fallback();
+    });
+  });
+
+  /* --- tarjetas que avanzan y controlan el gráfico --- */
+  [].slice.call(document.querySelectorAll(".deck")).forEach(function(deck){
+    var cards=[].slice.call(deck.querySelectorAll(".card"));
+    if(!cards.length)return;
+    var fig=deck.closest("figure");
+    var groups=fig?[].slice.call(fig.querySelectorAll("[data-s]")):[];
+    var dots=deck.querySelector(".dots");
+    var prev=deck.querySelector(".prev");
+    var next=deck.querySelector(".next");
+    var i=0;
+    dots.innerHTML=cards.map(function(c,k){
+      return '<button type="button" data-k="'+k+'" aria-label="Paso '+(k+1)+'"></button>';
+    }).join("");
+    var pips=[].slice.call(dots.querySelectorAll("button"));
+    function show(k){
+      i=k;
+      cards.forEach(function(c,n){c.classList.toggle("on",n===k);});
+      pips.forEach(function(b,n){b.classList.toggle("on",n===k);b.classList.toggle("done",n<k);});
+      groups.forEach(function(g){
+        var s=+g.dataset.s;
+        g.classList.toggle("on",s<=k);
+        g.classList.toggle("now",s===k);
+      });
+      prev.disabled=(k===0);
+      next.disabled=(k===cards.length-1);
+      next.textContent=(k===cards.length-1)?"Fin":"Siguiente";
+    }
+    pips.forEach(function(b){b.addEventListener("click",function(){show(+b.dataset.k);});});
+    prev.addEventListener("click",function(){if(i>0)show(i-1);});
+    next.addEventListener("click",function(){if(i<cards.length-1)show(i+1);});
+    show(0);
+  });
+})();
+</script>
+</body>
+</html>

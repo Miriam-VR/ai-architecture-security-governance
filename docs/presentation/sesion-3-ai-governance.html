@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sesión 3 · AI Governance · Datapath</title>
+<meta name="description" content="AI Architecture, Security & Governance · Sesión 3: políticas de riesgo, evaluación golden y adversarial, observabilidad y auditoría, Terraform y CI/CD, y el caso P-204 completo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#161719; --panel:#1D1F22; --panel2:#242629; --deep:#101113;
+  --line:#2E3136; --line2:#3A3E44;
+  --ink:#F4F5F6; --body:#C4C8CE; --muted:#878C94;
+  --coral:#FF7A50; --coral-d:#E2603A; --coral-t:rgba(255,122,80,.13);
+  --mint:#6FD3C7; --amber:#F0B85C; --rose:#F0776E;
+  --disp:"Outfit",system-ui,sans-serif;
+  --sans:"Inter",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --rail:272px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--body);font-family:var(--sans);font-size:15.5px;line-height:1.72;-webkit-font-smoothing:antialiased}
+::selection{background:var(--coral);color:#141517}
+a{color:var(--coral)}
+
+/* ---------- estructura ---------- */
+.shell{display:flex;min-height:100vh}
+.rail{width:var(--rail);flex:0 0 var(--rail);background:var(--deep);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.mark{padding:26px 24px 20px;border-bottom:1px solid var(--line)}
+.mark .logo{display:flex;align-items:center;gap:9px;margin-bottom:18px}
+.mark .logo svg{display:block}
+.mark .logo span{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);letter-spacing:-.02em}
+.mark .course{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);margin:0 0 8px}
+.mark h1{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);line-height:1.3;margin:0 0 6px;letter-spacing:-.01em}
+.mark p{font-size:12.5px;color:var(--muted);margin:0}
+.toc{padding:14px 0 50px}
+.toc .grp{font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;color:#5D626A;padding:18px 24px 8px}
+.toc a{display:flex;gap:12px;align-items:baseline;padding:7px 24px;color:var(--body);text-decoration:none;font-size:13.6px;line-height:1.4;border-left:2px solid transparent;transition:color .18s,background .18s,border-color .18s}
+.toc a:hover{background:#191A1D;color:var(--ink)}
+.toc a .n{font-family:var(--mono);font-size:10.5px;color:#5D626A;flex:0 0 20px;transition:color .18s}
+.toc a.on{color:var(--ink);border-left-color:var(--coral);background:linear-gradient(90deg,var(--coral-t),transparent)}
+.toc a.on .n{color:var(--coral)}
+
+.stage{flex:1;min-width:0}
+.bar{position:sticky;top:0;z-index:30;background:rgba(22,23,25,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:11px 44px}
+.bar .where{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .go{border:1px solid var(--line2);background:transparent;color:var(--body);font-family:var(--sans);font-size:12.5px;font-weight:500;border-radius:7px;padding:7px 13px;cursor:pointer;transition:all .18s}
+.bar .go:hover{border-color:var(--coral);color:var(--coral)}
+.bar .rule{position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--coral)}
+.menu{display:none}
+.page{max-width:1040px;margin:0 auto;padding:0 44px 160px}
+
+/* ---------- portada ---------- */
+.cover{position:relative;overflow:hidden;background:#0E0F11;border-radius:22px;margin:26px 0 12px;padding:56px 46px 52px;border:1px solid var(--line)}
+.cover .stripes{position:absolute;inset:0;pointer-events:none}
+.cover .stripes i{position:absolute;right:-14%;height:44px;width:62%;transform:skewX(-24deg);border-radius:3px}
+.cover .stripes i:nth-child(1){top:34px;background:var(--coral)}
+.cover .stripes i:nth-child(2){top:104px;background:#2C2F34}
+.cover .stripes i:nth-child(3){top:174px;background:var(--coral);opacity:.85}
+.cover .stripes i:nth-child(4){top:244px;background:#2C2F34}
+.cover .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);margin:0 0 18px;position:relative}
+.cover h2{font-family:var(--disp);font-size:52px;font-weight:700;color:var(--ink);line-height:1.04;letter-spacing:-.035em;margin:0 0 20px;max-width:13ch;position:relative}
+.cover .sub{font-size:17px;color:var(--body);max-width:50ch;margin:0 0 28px;position:relative;line-height:1.66}
+.cover .meta{display:flex;gap:26px;flex-wrap:wrap;position:relative}
+.cover .meta div{border-left:2px solid var(--coral);padding-left:12px}
+.cover .meta b{display:block;font-family:var(--disp);font-size:17px;color:var(--ink);font-weight:600}
+.cover .meta span{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- secciones ---------- */
+section{padding:64px 0 8px;scroll-margin-top:70px}
+section+section{border-top:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--coral);margin:0 0 14px}
+h3{font-family:var(--disp);font-size:34px;font-weight:600;color:var(--ink);letter-spacing:-.025em;line-height:1.16;margin:0 0 18px;max-width:22ch}
+h4{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);margin:38px 0 10px;letter-spacing:-.01em}
+p{margin:0 0 16px;max-width:74ch}
+.lead{font-size:17.5px;color:var(--ink);line-height:1.62;max-width:66ch;font-weight:400}
+strong{color:var(--ink);font-weight:600}
+em.q{font-style:normal;color:var(--coral)}
+ul{margin:0 0 18px;padding-left:22px;max-width:74ch}
+li{margin-bottom:9px}
+li::marker{color:var(--coral)}
+code{font-family:var(--mono);font-size:13px;background:var(--panel2);border-radius:5px;padding:2px 6px;color:var(--ink)}
+
+/* ---------- figuras ---------- */
+figure{margin:26px 0 30px;background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+figure .canvas{padding:20px 22px;background:radial-gradient(120% 140% at 20% 0%,#1F2226 0%,#141518 70%)}
+figure svg{display:block;width:100%;height:auto}
+figcaption{border-top:1px solid var(--line);padding:13px 22px;font-size:13.2px;color:var(--muted);line-height:1.6}
+figcaption b{color:var(--body);font-weight:600}
+.dt{fill:#EDEFF2;font-family:"Inter",sans-serif;font-size:14px;font-weight:600}
+.ds{fill:#B9BEC6;font-family:"Inter",sans-serif;font-size:12.5px}
+.dm{fill:#7C828B;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.13em}
+.dc{fill:#FF7A50;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.06em}
+.box{fill:#1C1F23;stroke:#34383F;stroke-width:1.4}
+.box.hi{fill:rgba(255,122,80,.12);stroke:#FF7A50;stroke-width:1.8}
+.box.mute{fill:#17191C;stroke:#282B30}
+.ln{stroke:#3A3E45;stroke-width:1.6;fill:none}
+.ln.on{stroke:#FF7A50;stroke-width:2}
+.ln.dash{stroke-dasharray:5 6}
+
+/* ---------- llamadas ---------- */
+.note{border-left:3px solid var(--coral);background:linear-gradient(90deg,var(--coral-t),rgba(255,122,80,.02));border-radius:0 12px 12px 0;padding:16px 20px;margin:24px 0;max-width:78ch}
+.note.warn{border-left-color:var(--amber);background:linear-gradient(90deg,rgba(240,184,92,.11),transparent)}
+.note.stop{border-left-color:var(--rose);background:linear-gradient(90deg,rgba(240,119,110,.11),transparent)}
+.note b{display:block;font-family:var(--disp);font-size:15px;color:var(--ink);margin-bottom:4px;font-weight:600}
+.note p{margin:0;font-size:14.4px;max-width:none}
+
+/* ---------- rejillas ---------- */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 19px}
+.tile .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);margin-bottom:9px}
+.tile h5{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--ink);margin:0 0 7px}
+.tile p{font-size:13.8px;margin:0;color:var(--body);line-height:1.6}
+.formula{background:var(--deep);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:22px 0;font-family:var(--mono);font-size:14px;color:var(--ink);line-height:2.1;overflow-x:auto}
+.formula .lbl{color:var(--muted);font-size:11px;letter-spacing:.13em;text-transform:uppercase}
+.formula .hl{color:var(--coral)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 6px}
+.chip{font-family:var(--mono);font-size:13.5px;padding:7px 11px;border-radius:8px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink)}
+.chip.c{border-color:rgba(255,122,80,.5);background:rgba(255,122,80,.12);color:#FFB496}
+.chip.m{border-color:rgba(111,211,199,.4);background:rgba(111,211,199,.1);color:#9FE4DA}
+.count{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:24px 0}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:10px 12px;border-bottom:1px solid var(--line2)}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--body)}
+td strong{color:var(--ink)}
+tr:last-child td{border-bottom:0}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:24px 0}
+.links a{display:flex;gap:13px;align-items:center;text-decoration:none;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px 17px;transition:border-color .2s,transform .2s}
+.links a:hover{border-color:var(--coral);transform:translateY(-2px)}
+.links .ic{width:36px;height:36px;border-radius:10px;background:var(--coral-t);display:grid;place-items:center;font-size:18px;flex:0 0 36px}
+.links b{display:block;font-family:var(--disp);font-size:14.5px;color:var(--ink);font-weight:600}
+.links span{font-family:var(--mono);font-size:11px;color:var(--muted);word-break:break-all}
+
+/* ---------- cuestionario ---------- */
+.quiz{background:var(--panel);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-top:28px}
+.qtop{display:flex;align-items:center;gap:16px;padding:18px 22px;border-bottom:1px solid var(--line);background:var(--deep)}
+.qtop .idx{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--ink);margin-right:auto}
+.qtop .idx small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:400;margin-top:2px}
+.qtop .score{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.pips{display:flex;gap:5px}
+.pips i{width:26px;height:4px;border-radius:2px;background:#33373E;display:block;transition:background .3s}
+.pips i.now{background:var(--coral)}
+.pips i.ok{background:var(--mint)}
+.pips i.no{background:var(--rose)}
+.qbody{padding:26px 24px}
+.qtag{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);margin:0 0 12px}
+.qq{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--ink);line-height:1.35;margin:0 0 20px;max-width:60ch}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:14px;align-items:flex-start;text-align:left;background:var(--panel2);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;font-family:var(--sans);font-size:14.5px;color:var(--body);cursor:pointer;line-height:1.55;transition:border-color .18s,transform .18s,background .18s}
+.opt:hover:not(:disabled){border-color:var(--coral);transform:translateX(3px)}
+.opt .k{font-family:var(--mono);font-size:12px;color:var(--muted);flex:0 0 16px;padding-top:2px}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--mint);background:rgba(111,211,199,.1);color:#C9EFE9}
+.opt.right .k{color:var(--mint)}
+.opt.wrong{border-color:var(--rose);background:rgba(240,119,110,.1);color:#F5C9C5}
+.opt.wrong .k{color:var(--rose)}
+.opt.off{opacity:.42}
+.fb{margin-top:20px;border-radius:12px;padding:16px 18px;font-size:14.2px;border-left:3px solid;display:none;line-height:1.65}
+.fb.show{display:block}
+.fb.y{border-color:var(--mint);background:rgba(111,211,199,.08)}
+.fb.n{border-color:var(--rose);background:rgba(240,119,110,.08)}
+.fb b{display:block;font-family:var(--disp);font-size:15px;color:var(--ink);margin-bottom:4px}
+.qfoot{padding:15px 22px;border-top:1px solid var(--line);background:var(--deep);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qfoot .hint{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-right:auto}
+.btn{border:1px solid var(--coral);background:var(--coral);color:#141517;font-family:var(--sans);font-size:13.5px;font-weight:600;border-radius:9px;padding:9px 18px;cursor:pointer;transition:all .18s}
+.btn:hover{background:var(--coral-d);border-color:var(--coral-d)}
+.btn.ghost{background:transparent;color:var(--body);border-color:var(--line2)}
+.btn.ghost:hover{border-color:var(--coral);color:var(--coral);background:transparent}
+.result{text-align:center;padding:32px 20px}
+.result .big{font-family:var(--disp);font-size:68px;font-weight:700;color:var(--ink);line-height:1;letter-spacing:-.04em}
+.result .of{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:8px}
+.result .msg{font-size:15px;max-width:52ch;margin:20px auto 0;color:var(--body)}
+.review{text-align:left;max-width:60ch;margin:26px auto 0}
+.review .item{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:13.6px}
+.review .item b{display:block;color:var(--ink);margin-bottom:6px;font-weight:600}
+.review .bad{color:var(--rose)}
+.review .good{color:var(--mint)}
+.foot{margin-top:70px;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5D626A}
+
+
+/* ---------- movimiento ---------- */
+@keyframes stripeIn{from{transform:skewX(-24deg) translateX(120px);opacity:0}to{transform:skewX(-24deg) translateX(0);opacity:1}}
+.cover .stripes i{animation:stripeIn .9s cubic-bezier(.2,.8,.3,1) both}
+.cover .stripes i:nth-child(1){animation-delay:.10s}
+.cover .stripes i:nth-child(2){animation-delay:.20s}
+.cover .stripes i:nth-child(3){animation-delay:.30s}
+.cover .stripes i:nth-child(4){animation-delay:.40s}
+@keyframes riseIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.cover .kicker{animation:riseIn .7s .05s both}
+.cover h2{animation:riseIn .7s .16s both}
+.cover .sub{animation:riseIn .7s .28s both}
+.cover .meta{animation:riseIn .7s .40s both}
+
+figure svg .rise{opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.75,.3,1)}
+figure.in svg .rise{opacity:1;transform:none}
+figure svg .grow{transform:scaleX(0);transform-box:fill-box;transform-origin:left center;transition:transform .9s cubic-bezier(.2,.8,.3,1)}
+figure.in svg .grow{transform:scaleX(1)}
+figure svg .draw{stroke-dasharray:380;stroke-dashoffset:380;transition:stroke-dashoffset 1.2s ease .35s}
+figure.in svg .draw{stroke-dashoffset:0}
+.flow{stroke-dasharray:5 7;animation:flowd 1.7s linear infinite}
+@keyframes flowd{to{stroke-dashoffset:-24}}
+.pulse{animation:puls 2.8s ease-in-out infinite}
+@keyframes puls{0%,100%{opacity:.5}50%{opacity:1}}
+.bob{animation:bob 6s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-5px)}}
+
+/* ---------- figuras por pasos ---------- */
+.stepfig g[data-s]{opacity:.13;transition:opacity .55s ease}
+.stepfig g[data-s].on{opacity:1}
+.stepfig g[data-s].now .box{stroke:#FF7A50;fill:rgba(255,122,80,.12)}
+.stepfig g[data-s].now text.ds{fill:#FFD3C1}
+.stepfig g[data-s].now text.dm{fill:#FF9A73}
+.deck{border-top:1px solid var(--line);background:var(--panel)}
+.cards{padding:22px 24px 6px;min-height:126px}
+.card{display:none}
+.card.on{display:block;animation:cardIn .4s cubic-bezier(.2,.8,.3,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card .step{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);display:block;margin-bottom:9px}
+.card h5{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);margin:0 0 8px}
+.card p{font-size:14.6px;line-height:1.65;margin:0;max-width:72ch}
+.ctrls{display:flex;align-items:center;gap:10px;padding:14px 24px;border-top:1px solid var(--line);background:var(--deep);flex-wrap:wrap}
+.ctrls .dots{display:flex;gap:6px;margin-right:auto}
+.ctrls .dots button{width:26px;height:5px;border-radius:3px;border:0;background:#33373E;cursor:pointer;padding:0;transition:background .3s,width .3s}
+.ctrls .dots button.on{background:var(--coral);width:42px}
+.ctrls .dots button.done{background:#7C5343}
+.btn.sm{padding:8px 15px;font-size:12.6px}
+.btn:disabled{opacity:.32;cursor:default}
+.btn:disabled:hover{background:var(--coral);border-color:var(--coral)}
+.btn.ghost:disabled:hover{background:transparent;border-color:var(--line2);color:var(--body)}
+
+
+/* ---------- recursos y materiales ---------- */
+.res{display:flex;flex-direction:column;gap:12px;margin:26px 0}
+.rescard{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+a.rescard{display:flex;align-items:center;gap:14px;padding:16px 18px;text-decoration:none;transition:border-color .2s,transform .2s}
+a.rescard:hover{border-color:var(--coral);transform:translateY(-2px)}
+.rescard .ic{width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:var(--coral-t);display:grid;place-items:center;font-size:18px}
+.rescard .bd{flex:1;min-width:0;text-align:left}
+.rescard .bd b{display:block;font-family:var(--disp);font-size:15px;color:var(--ink);font-weight:600;margin-bottom:2px}
+.rescard .bd span{display:block;font-size:12.8px;color:var(--muted);line-height:1.5}
+.rescard .go,.rescard .chev{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--coral);white-space:nowrap}
+.reshead{display:flex;align-items:center;gap:14px;width:100%;padding:16px 18px;background:transparent;border:0;cursor:pointer;font-family:var(--sans)}
+.reshead:hover .chev{color:#FFB496}
+.resbody{display:none;border-top:1px solid var(--line)}
+.rescard.open .resbody{display:block;animation:cardIn .35s cubic-bezier(.2,.8,.3,1)}
+.codetop{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--deep);border-bottom:1px solid var(--line)}
+.codetop .lang{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:auto}
+.copy{border:1px solid var(--line2);background:transparent;color:var(--body);font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;border-radius:7px;padding:6px 13px;cursor:pointer;transition:all .18s}
+.copy:hover{border-color:var(--coral);color:var(--coral)}
+.copy.ok{border-color:var(--mint);color:var(--mint)}
+.rescard pre{margin:0;padding:18px 20px;overflow:auto;max-height:440px;background:#0E0F11}
+.rescard code{font-family:var(--mono);font-size:12.9px;line-height:1.78;color:#D7DCE3;background:transparent;padding:0;border-radius:0;white-space:pre}
+
+
+/* ---------- recursos informativos (sin enlace) ---------- */
+div.rescard.static{display:flex;align-items:center;gap:14px;padding:16px 18px}
+div.rescard.static .go{color:var(--muted)}
+.links a>div{min-width:0}
+
+@media(max-width:980px){
+  .shell{flex-direction:column}
+  .rail{width:100%;flex:none;height:auto;position:static;border-right:0;border-bottom:1px solid var(--line)}
+  .toc{display:none;padding-bottom:20px}
+  body.open .toc{display:block}
+  .menu{display:inline-flex;border:1px solid var(--line2);background:transparent;color:var(--body);border-radius:7px;padding:7px 12px;font-family:var(--sans);font-size:12.5px;cursor:pointer}
+  .bar,.page{padding-left:20px;padding-right:20px}
+  .cover{padding:36px 24px 34px}
+  .cover h2{font-size:34px;max-width:none}
+  .cover .stripes{display:none}
+  h3{font-size:26px}
+  .duo,.trio{grid-template-columns:1fr}
+  figure .canvas{padding:14px 12px;overflow-x:auto}
+  figure svg{min-width:620px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="rail">
+  <div class="mark">
+    <div class="logo">
+      <svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true">
+        <path d="M14 4c4 0 7 2.6 7.6 6.2 3 .2 5.4 2.5 5.4 5.4 0 3-2.6 5.4-5.8 5.4H12c-3.9 0-7-2.9-7-6.5 0-3 2.1-5.5 5-6.2C10.6 5.6 12.1 4 14 4z" fill="#FF7A50"/>
+        <rect x="0" y="8" width="3" height="3" fill="#FF7A50" opacity=".9"/>
+        <rect x="4" y="14" width="3" height="3" fill="#FF7A50" opacity=".7"/>
+        <rect x="0" y="17" width="2.4" height="2.4" fill="#FF7A50" opacity=".5"/>
+        <rect x="5" y="4" width="2.4" height="2.4" fill="#FF7A50" opacity=".6"/>
+      </svg>
+      <span>datapath</span>
+    </div>
+    <p class="course">AI Architecture, Security &amp; Governance</p>
+    <h1>Sesión 3 · AI Governance</h1>
+    <p>Sesión 3 de 3 · 4 horas</p>
+  </div>
+  <nav class="toc" id="toc"></nav>
+</aside>
+
+<main class="stage">
+  <div class="bar">
+    <button class="menu" id="menu">Temario</button>
+    <span class="where" id="where">Portada</span>
+    <button class="go" id="go">Cuestionario</button>
+    <i class="rule" id="rule"></i>
+  </div>
+  <div class="page">
+
+  <header class="cover">
+    <div class="stripes"><i></i><i></i><i></i><i></i></div>
+    <p class="kicker">Sesión 3 de 3</p>
+    <h2>AI Governance</h2>
+    <p class="sub">Un agente seguro todavía no es un agente gobernable. Aquí definimos cuánta autonomía tiene, medimos si es suficientemente bueno para liberarlo, dejamos evidencia auditable, lo desplegamos con control y reversa, y lo demostramos con el caso completo de la bomba P-204.</p>
+    <div class="meta">
+      <div><b>17 temas</b><span>con diagramas</span></div>
+      <div><b>6 preguntas</b><span>autoevaluación final</span></div>
+      <div><b>4 horas</b><span>duración estimada</span></div>
+    </div>
+  </header>
+
+<section id="s1" data-grp="Punto de partida" data-nav="De seguro a demostrable">
+<p class="eyebrow">01 · Gobierno</p>
+<h3>No basta con que el agente sea seguro: hay que poder demostrarlo</h3>
+<p class="lead">La Sesión 2 impide abusos. La Sesión 3 define qué comportamiento es aceptable, lo mide, deja evidencia y libera cambios con control y con vuelta atrás.</p>
+<figure><div class="canvas"><svg viewBox="0 0 940 180" role="img" aria-label="Cinco pasos de gobierno: definir reglas, medir, registrar evidencia, liberar con control y demostrar el conjunto."><text class="dm" x="102" y="38" text-anchor="middle">V11</text><g class="rise"><rect class="box" x="27" y="52" width="150" height="62" rx="12"/><text class="dt" x="102" y="80" text-anchor="middle">Definir</text><text class="ds" x="102" y="98" text-anchor="middle">reglas y autonomía</text></g><path class="ln on flow" d="M179 83 H198"/><polygon points="197,77 209,83 197,89" fill="#FF7A50"/><text class="dm" x="286" y="38" text-anchor="middle">V12</text><g class="rise"><rect class="box" x="211" y="52" width="150" height="62" rx="12"/><text class="dt" x="286" y="80" text-anchor="middle">Medir</text><text class="ds" x="286" y="98" text-anchor="middle">scorecard y gate</text></g><path class="ln on flow" d="M363 83 H382"/><polygon points="381,77 393,83 381,89" fill="#FF7A50"/><text class="dm" x="470" y="38" text-anchor="middle">V13</text><g class="rise"><rect class="box" x="395" y="52" width="150" height="62" rx="12"/><text class="dt" x="470" y="80" text-anchor="middle">Registrar</text><text class="ds" x="470" y="98" text-anchor="middle">evidencia auditable</text></g><path class="ln on flow" d="M547 83 H566"/><polygon points="565,77 577,83 565,89" fill="#FF7A50"/><text class="dm" x="654" y="38" text-anchor="middle">V14</text><g class="rise"><rect class="box" x="579" y="52" width="150" height="62" rx="12"/><text class="dt" x="654" y="80" text-anchor="middle">Liberar</text><text class="ds" x="654" y="98" text-anchor="middle">con control y reversa</text></g><path class="ln on flow" d="M731 83 H750"/><polygon points="749,77 761,83 749,89" fill="#FF7A50"/><text class="dm" x="838" y="38" text-anchor="middle">V15</text><g class="rise"><rect class="box hi" x="763" y="52" width="150" height="62" rx="12"/><text class="dt" x="838" y="80" text-anchor="middle" fill="#FFB496">Demostrar</text><text class="ds" x="838" y="98" text-anchor="middle">todo junto</text></g><text class="ds" x="102" y="150" text-anchor="middle">¿cuánta autonomía?</text><text class="ds" x="286" y="150" text-anchor="middle">¿es suficientemente bueno?</text><text class="ds" x="470" y="150" text-anchor="middle">¿qué pasó y por qué?</text><text class="ds" x="654" y="150" text-anchor="middle">¿cómo libero y revierto?</text><text class="ds" x="838" y="150" text-anchor="middle">¿funciona todo junto?</text></svg></div><figcaption><b>Figura 1.</b> Cada paso responde a una pregunta que un responsable de riesgo haría. La seguridad impide el abuso; el gobierno permite demostrar, con evidencia, que se impide.</figcaption></figure><table><tr><th></th><th>Seguridad (Sesión 2)</th><th>Gobierno (Sesión 3)</th></tr><tr><td><strong>Enfoque</strong></td><td>Impedir abusos y ataques</td><td>Definir, medir y evidenciar el comportamiento aceptable</td></tr><tr><td><strong>Ejemplo</strong></td><td>Bloquear acceso entre plantas</td><td>Demostrar con un scorecard que se bloquea y registrar quién aprobó qué</td></tr></table><div class="note"><b>Quién lee esta evidencia</b><p>No es solo ingeniería. Un responsable de mantenimiento, de riesgo o de cumplimiento debe poder revisar qué hizo el sistema y por qué, sin leer código. Esa es la prueba final del programa.</p></div>
+</section>
+
+<section id="s2" data-grp="Autonomía" data-nav="Tres niveles de riesgo">
+<p class="eyebrow">02 · V11 · Política</p>
+<h3>Cuánta autonomía tiene el agente es una decisión de gobierno, no del modelo</h3>
+<p class="lead">Una tabla de reglas decide, según el riesgo de cada acción propuesta, si se ejecuta sola, si necesita a una persona o si está prohibida.</p>
+<table><tr><th>Nivel</th><th>Qué ocurre</th><th>Ejemplos</th></tr><tr><td><strong>Permitido</strong> (bajo riesgo)</td><td>Se ejecuta directo</td><td>Consultar historial, leer sensores, crear un borrador</td></tr><tr><td><strong>Requiere aprobación</strong> (alto)</td><td>Un supervisor debe aprobar (HITL)</td><td>Publicar una orden de trabajo</td></tr><tr><td><strong>Prohibido</strong></td><td>Siempre rechazado, para todos</td><td>Control de PLC, cambiar setpoints, detener maquinaria</td></tr></table><p>La clasificación es <strong>determinista</strong>: la hace código, no el LLM. Un modelo puede equivocarse o ser manipulado, y además quedaría calificando su propio riesgo. Una tabla de reglas da siempre el mismo resultado ante la misma entrada y se puede probar con una tabla de casos.</p><div class="duo"><div class="tile"><div class="tag">Prohibición absoluta</div><h5>El control de PLC no se desbloquea</h5><p>Ni un administrador ni una aprobación humana lo habilitan. Si una aprobación pudiera desbloquear lo prohibido, “prohibido” sería solo “difícil”.</p></div><div class="tile"><div class="tag">HITL</div><h5>La persona aprueba, no redacta</h5><p>El humano en el bucle decide sobre una acción concreta ya clasificada, con su evidencia, no sobre un texto libre del modelo.</p></div></div><div class="note stop"><b>Errores típicos</b><p>Dejar que el modelo califique su propio riesgo, permitir que una aprobación humana desbloquee una acción prohibida y sobrescribir políticas sin versionar.</p></div>
+</section>
+
+<section id="s3" data-grp="Autonomía" data-nav="Políticas versionadas">
+<p class="eyebrow">03 · V11 · Versiones</p>
+<h3>Una política que cambia sin dejar rastro no se puede auditar</h3>
+<p class="lead">Cada cambio crea una versión nueva y un decision record, y cada decisión sobre una acción cita la versión con la que se tomó.</p>
+<figure class="stepfig"><div class="canvas"><svg viewBox="0 0 940 250" role="img" aria-label="Cambio de política por un administrador, versión nueva, decision record, trabajo encolado recomprobado y política que sobrevive al reinicio."><g data-s="0"><g><rect class="box" x="20" y="54" width="170" height="62" rx="12"/><text class="dt" x="105" y="82" text-anchor="middle">Cambio de política</text><text class="ds" x="105" y="100" text-anchor="middle">POST /policy (admin)</text></g></g><g data-s="1"><path class="ln on flow" d="M192 85 H213"/><polygon points="212,79 224,85 212,91" fill="#FF7A50"/><g><rect class="box hi" x="226" y="54" width="170" height="62" rx="12"/><text class="dt" x="311" y="82" text-anchor="middle" fill="#FFB496">Versión N+1</text><text class="ds" x="311" y="100" text-anchor="middle">policy_versions</text></g></g><g data-s="2"><path class="ln on flow" d="M398 85 H419"/><polygon points="418,79 430,85 418,91" fill="#FF7A50"/><g><rect class="box" x="432" y="54" width="170" height="62" rx="12"/><text class="dt" x="517" y="82" text-anchor="middle">Decision record</text><text class="ds" x="517" y="100" text-anchor="middle">quién, cuándo, por qué</text></g></g><g data-s="3"><path class="ln on flow" d="M604 85 H625"/><polygon points="624,79 636,85 624,91" fill="#FF7A50"/><g><rect class="box" x="638" y="54" width="134" height="62" rx="12"/><text class="dt" x="705" y="82" text-anchor="middle">Cola</text><text class="ds" x="705" y="100" text-anchor="middle">ya encolado</text></g><path class="ln on dash flow" d="M705 118 V170"/><polygon points="699,158 705,170 711,158" fill="#FF7A50"/><g><rect class="box hi" x="610" y="172" width="190" height="52" rx="12"/><text class="dt" x="705" y="203" text-anchor="middle" fill="#FFB496">Executor recomprueba</text></g></g><g data-s="4"><g><rect class="box mute" x="20" y="172" width="560" height="52" rx="12"/><text class="dt" x="300" y="203" text-anchor="middle">Al reiniciar, la política vigente es la última versión activa</text></g></g></svg></div><div class="deck"><div class="cards"><article class="card on"><span class="step">Paso 1 de 5</span><h5>Solo un administrador cambia la política</h5><p>El endpoint <code>POST /policy</code> exige el rol de administrador. Un supervisor o un técnico reciben 403. La política no es configuración dispersa: es un objeto con dueño.</p></article><article class="card"><span class="step">Paso 2 de 5</span><h5>Cada cambio crea una versión</h5><p>Nada se sobrescribe. Se inserta una versión nueva en <code>policy_versions</code> y se marca activa. La anterior queda para siempre, de modo que se puede saber qué regla estaba vigente en cualquier fecha.</p></article><article class="card"><span class="step">Paso 3 de 5</span><h5>Cada decisión cita la versión</h5><p>Se genera un <em class="q">decision record</em> del cambio, y cada decisión sobre una acción registra con qué versión de la política se tomó. Así dos decisiones distintas sobre la misma acción se explican por la versión, no por misterio.</p></article><article class="card"><span class="step">Paso 4 de 5</span><h5>Una política más estricta alcanza lo ya encolado</h5><p>Si se endurece una regla mientras hay trabajo en la cola, el executor recomprueba con la política vigente al ejecutar y lo detiene. La seguridad no depende de cuándo se encoló el mensaje.</p></article><article class="card"><span class="step">Paso 5 de 5</span><h5>La política sobrevive a un reinicio</h5><p>La política activa se lee de la base, no de memoria del proceso. Un reinicio de Lambda o de EC2 no cambia el comportamiento. Y una cosa no cambia nunca: ninguna versión puede relajar la prohibición del control de PLC.</p></article></div><div class="ctrls"><div class="dots"></div><button class="btn ghost sm prev" type="button">Anterior</button><button class="btn sm next" type="button">Siguiente</button></div></div></figure>
+</section>
+
+<section id="s4" data-grp="Medición" data-nav="Golden y adversarial">
+<p class="eyebrow">04 · V12 · Evaluación</p>
+<h3>“Parece que funciona” no es evidencia; un scorecard sí</h3>
+<p class="lead">Antes de liberar hay que medir calidad y seguridad. Dos conjuntos de casos se ejecutan contra el agente real, con mocks en CI, y producen un scorecard.</p>
+<table><tr><th>Dataset</th><th>Qué contiene</th><th>Qué mide</th></tr><tr><td><strong>Golden</strong> (25 casos)</td><td>Respuesta correcta conocida: positivos, ambiguos, sin evidencia y con autorización denegada</td><td>Calidad</td></tr><tr><td><strong>Adversarial</strong> (10 casos)</td><td>Ataques: prompt injection, exfiltración, acceso cruzado, MCP no permitido, replay y duplicación</td><td>Seguridad</td></tr></table><figure><div class="canvas"><svg viewBox="0 0 940 260" role="img" aria-label="Casos golden y adversariales entran a un runner que ejecuta el agente; la respuesta y su traza pasan chequeos deterministas, producen un scorecard y un quality gate."><g class="rise"><rect class="box" x="20" y="30" width="150" height="54" rx="12"/><text class="dt" x="95" y="54" text-anchor="middle">Golden</text><text class="ds" x="95" y="72" text-anchor="middle">25 casos</text></g><g class="rise"><rect class="box" x="20" y="110" width="150" height="54" rx="12"/><text class="dt" x="95" y="134" text-anchor="middle">Adversarial</text><text class="ds" x="95" y="152" text-anchor="middle">10 casos</text></g><path class="ln on flow" d="M172 57 H196 V98 H212"/><path class="ln on flow" d="M172 137 H196 V98"/><polygon points="204,92 216,98 204,104" fill="#FF7A50"/><g class="rise"><rect class="box hi" x="218" y="66" width="150" height="64" rx="12"/><text class="dt" x="293" y="95" text-anchor="middle" fill="#FFB496">Runner</text><text class="ds" x="293" y="113" text-anchor="middle">agente real, mocks</text></g><path class="ln on flow" d="M370 98 H391"/><polygon points="390,92 402,98 390,104" fill="#FF7A50"/><g class="rise"><rect class="box" x="404" y="66" width="160" height="64" rx="12"/><text class="dt" x="484" y="95" text-anchor="middle">Respuesta + traza</text><text class="ds" x="484" y="113" text-anchor="middle">citas, tools, decisiones</text></g><path class="ln on flow" d="M566 98 H587"/><polygon points="586,92 598,98 586,104" fill="#FF7A50"/><g class="rise"><rect class="box" x="600" y="66" width="150" height="64" rx="12"/><text class="dt" x="675" y="95" text-anchor="middle">Chequeos</text><text class="ds" x="675" y="113" text-anchor="middle">deterministas</text></g><path class="ln on flow" d="M752 98 H773"/><polygon points="772,92 784,98 772,104" fill="#FF7A50"/><g class="rise"><rect class="box hi" x="786" y="66" width="134" height="64" rx="12"/><text class="dt" x="853" y="95" text-anchor="middle" fill="#FFB496">Scorecard</text><text class="ds" x="853" y="113" text-anchor="middle">métricas</text></g><polygon class="box hi" points="640,150 700,196 640,242 580,196"/><text class="ds" x="640" y="200" text-anchor="middle">Quality gate</text><path class="ln on flow" d="M853 132 V196 H702"/><text class="dm" x="560" y="190" text-anchor="end" fill="#6FD3C7">PASA</text><text class="ds" x="560" y="208" text-anchor="end">candidato</text><text class="dm" x="720" y="182" fill="#F0776E">FALLA</text><text class="ds" x="720" y="224">no se libera</text><text class="dm" x="404" y="36">TRAZA, NO SOLO TEXTO</text></svg></div><figcaption><b>Figura 2.</b> Se evalúa la traza completa (qué herramientas se llamaron, qué decidió la política), no solo el texto final. Un agente puede responder bien con el texto y haber ejecutado algo que no debía.</figcaption></figure><div class="note warn"><b>Un golden sin casos incómodos no sirve</b><p>Un conjunto solo de casos felices demuestra poco. Por eso hay casos donde la respuesta correcta es pedir una medición adicional, y casos donde la respuesta correcta es denegar.</p></div>
+</section>
+
+<section id="s5" data-grp="Medición" data-nav="Chequeos deterministas">
+<p class="eyebrow">05 · V12 · Verificaciones</p>
+<h3>Lo que se puede verificar con código no se le delega a un juez</h3>
+<p class="lead">El evaluador revisa reglas comprobables. Un LLM juez puede aportar señal adicional, pero nunca es el único criterio.</p>
+<table><tr><th>Verificación</th><th>Ejemplo</th></tr><tr><td><strong>Citas válidas</strong></td><td>Toda cita existe entre los documentos recuperados</td></tr><tr><td><strong>Herramientas correctas</strong></td><td>Llamó a <code>get_sensor_readings</code>, no a una inexistente</td></tr><tr><td><strong>Autorización</strong></td><td>En un caso denegado, la respuesta es una denegación sin datos</td></tr><tr><td><strong>No inventar causa</strong></td><td>Sin evidencia, pide una medición adicional</td></tr><tr><td><strong>Acciones</strong></td><td>En un caso adversarial no se ejecuta ninguna acción</td></tr></table><p>Un juez LLM tiene dos problemas: no es reproducible y puede ser engañado por la propia respuesta que evalúa. El evaluador del repositorio es determinista. Además se prueba al evaluador: hay tests que comprueban que detecta una autorización ausente en el servidor, una política que permitiera el control de PLC y una expectativa mal escrita.</p><div class="note"><b>Evaluar al evaluador</b><p>Un scorecard en verde puede esconder un evaluador roto. Probar que el evaluador falla cuando debe es lo que permite confiar en que pasa cuando pasa.</p></div>
+</section>
+
+<section id="s6" data-grp="Medición" data-nav="El scorecard">
+<p class="eyebrow">06 · V12 · Gate</p>
+<h3>El quality gate convierte las métricas en una decisión de liberación</h3>
+<p class="lead">El scorecard mide citas, uso de herramientas, autorización, latencia y costo estimado. Si no cumple los umbrales, el pipeline se detiene.</p>
+<table><tr><th>Métrica</th><th>Resultado</th><th>Qué indica</th></tr><tr><td>Casos golden aprobados</td><td>25 de 25</td><td>Calidad sobre casos con respuesta conocida</td></tr><tr><td>Casos adversariales bloqueados</td><td>10 de 10</td><td>Ningún ataque del conjunto tuvo efecto</td></tr><tr><td>Validez de citas</td><td>1.0</td><td>Toda cita proviene de lo recuperado</td></tr><tr><td>Validez de llamadas a herramientas</td><td>1.0</td><td>Solo herramientas y argumentos válidos</td></tr><tr><td>Exactitud de autorización</td><td>1.0</td><td>Cada caso denegado fue denegado</td></tr><tr><td>Latencia p50 / p95</td><td>33 ms / 44 ms</td><td>Medida con el mock, sin red</td></tr><tr><td>Costo estimado</td><td>US$ 0.0057</td><td>Estimación con tokens simulados y precio de lista de gpt-4o-mini</td></tr></table><p>El script <code>scripts/run_eval.py</code> sale con error si el porcentaje de golden o de adversariales bloqueados queda por debajo del umbral (1.0 por defecto), y CI lo ejecuta como un job obligatorio.</p><div class="note warn"><b>Estas cifras son del mock</b><p>Que latencia y costo salgan de un mock significa que prueban la medición, no el rendimiento real. Con un modelo real y un Supabase real, los números serán otros y habrá que repetir la evaluación antes de liberar.</p></div>
+</section>
+
+<section id="s7" data-grp="Evidencia" data-nav="Tres cosas distintas">
+<p class="eyebrow">07 · V13 · Conceptos</p>
+<h3>Observabilidad, auditoría y memoria de negocio se confunden, y no deben mezclarse</h3>
+<p class="lead">Parecen tres versiones de “guardar lo que pasó”, pero sirven a públicos distintos y tienen reglas distintas de conservación y mutabilidad.</p>
+<table><tr><th></th><th>Para qué</th><th>Quién la usa</th><th>Mutabilidad</th></tr><tr><td><strong>Observabilidad</strong> (logs, métricas, trazas)</td><td>Diagnosticar rendimiento y fallos</td><td>Ingeniería y operaciones</td><td>Se puede rotar o expirar</td></tr><tr><td><strong>Auditoría</strong> (audit events)</td><td>Probar quién hizo o decidió qué</td><td>Gobierno y cumplimiento</td><td>Solo se agrega (append-only)</td></tr><tr><td><strong>Memoria de negocio</strong> (incidentes)</td><td>Continuidad del caso</td><td>El agente y los técnicos</td><td>Se actualiza</td></tr></table><p>Por eso la auditoría va en almacenamiento separado, y el Policy Engine escribe en ella directamente, sin pasar por el pipeline de observabilidad. En el repositorio, la inmutabilidad se comprueba en dos niveles: el código del log de auditoría no ofrece operaciones de modificación, y la tabla en Postgres rechaza actualizaciones y borrados.</p><div class="note stop"><b>Mezclar auditoría con logs normales</b><p>Los logs se rotan, se muestrean y a veces se pierden. Si la prueba de quién aprobó qué vive ahí, la inmutabilidad se pierde con ellos.</p></div>
+</section>
+
+<section id="s8" data-grp="Evidencia" data-nav="Correlación y latencia">
+<p class="eyebrow">08 · V13 · Trazabilidad</p>
+<h3>Tres identificadores permiten reconstruir cualquier ejecución</h3>
+<p class="lead">El incidente es el caso, la ejecución es un intento del agente y la traza es una petición de punta a punta. Todos viajan por la respuesta, los logs y la auditoría.</p>
+<figure><div class="canvas"><svg viewBox="0 0 940 300" role="img" aria-label="El incidente contiene ejecuciones y cada ejecución una traza; la latencia se mide por nodo del grafo para ver dónde se va el tiempo."><g class="rise"><rect class="box" x="20" y="30" width="220" height="62" rx="12"/><text class="dt" x="130" y="58" text-anchor="middle">incident_id</text><text class="ds" x="130" y="76" text-anchor="middle">INC-204 · el caso</text></g><g class="rise"><rect class="box" x="20" y="120" width="220" height="62" rx="12"/><text class="dt" x="130" y="148" text-anchor="middle">run_id</text><text class="ds" x="130" y="166" text-anchor="middle">una ejecución del agente</text></g><g class="rise"><rect class="box hi" x="20" y="210" width="220" height="62" rx="12"/><text class="dt" x="130" y="238" text-anchor="middle" fill="#FFB496">trace_id</text><text class="ds" x="130" y="256" text-anchor="middle">una petición de punta a punta</text></g><path class="ln on flow" d="M130 94 V107"/><polygon points="124,106 130,118 136,106" fill="#FF7A50"/><path class="ln on flow" d="M130 184 V197"/><polygon points="124,196 130,208 136,196" fill="#FF7A50"/><text class="dm" x="290" y="28">LATENCIA POR NODO (node_timings_ms)</text><text class="ds" x="290" y="62">load</text><rect class="grow" x="380" y="48" width="80" height="20" rx="5" fill="#FF7A50" opacity="0.55"/><text class="ds" x="290" y="96">retrieve</text><rect class="grow" x="380" y="82" width="140" height="20" rx="5" fill="#FF7A50" opacity="0.55"/><text class="ds" x="290" y="130">reason</text><rect class="grow" x="380" y="116" width="380" height="20" rx="5" fill="#FF7A50" opacity="1"/><text class="ds" x="290" y="164">tools</text><rect class="grow" x="380" y="150" width="180" height="20" rx="5" fill="#FF7A50" opacity="0.55"/><text class="ds" x="290" y="198">diagnose</text><rect class="grow" x="380" y="184" width="60" height="20" rx="5" fill="#FF7A50" opacity="0.55"/><text class="ds" x="290" y="232">persist</text><rect class="grow" x="380" y="218" width="100" height="20" rx="5" fill="#FF7A50" opacity="0.55"/><text class="dm" x="860" y="150" text-anchor="end" fill="#F0B85C">valores ilustrativos</text></svg></div><figcaption><b>Figura 3.</b> Las barras ilustran la lectura, no son mediciones: el repositorio registra el tiempo por nodo en cada respuesta, pero no hay datos de AWS. Con los tres identificadores se puede pedir “todo lo de la ejecución X del incidente INC-204”.</figcaption></figure><p>Los logs son JSON estructurado y llevan <code>trace_id</code>. La respuesta incluye <code>incident_id</code>, <code>run_id</code> y <code>trace_id</code>, y un test comprueba que los tres coinciden entre la respuesta, la ejecución guardada, los logs y la auditoría. Cada respuesta trae además el tiempo por nodo, que responde “¿se va el tiempo en el LLM, en el RAG o en MCP?”. OpenTelemetry está apagado salvo que haya un exportador configurado.</p>
+</section>
+
+<section id="s9" data-grp="Evidencia" data-nav="Qué se audita">
+<p class="eyebrow">09 · V13 · Auditoría</p>
+<h3>Se auditan decisiones y evidencia, nunca pensamientos ni secretos</h3>
+<p class="lead">Un buen registro de auditoría responde quién pidió, quién decidió, con qué regla y con qué resultado, y no contiene nada que no deba conservarse.</p>
+<table><tr><th>Evento</th><th>Ejemplo</th></tr><tr><td><strong>Autorización</strong></td><td>El usuario X intentó leer INC-B y se denegó</td></tr><tr><td><strong>Autenticación fallida</strong></td><td>Un token inválido o ausente</td></tr><tr><td><strong>Política</strong></td><td>Una acción clasificada de alto riesgo con la versión de política Z</td></tr><tr><td><strong>Aprobación</strong></td><td>El supervisor S aprobó la acción A</td></tr><tr><td><strong>Ejecución</strong></td><td>Orden creada en el CMMS simulado con la clave K</td></tr></table><div class="duo"><div class="tile"><div class="tag">Redacción</div><h5>Secretos y PII fuera</h5><p>Los detalles de los eventos y los logs pasan por redacción antes de escribirse. Un test comprueba que ni el secreto ni el dato personal aparecen.</p></div><div class="tile"><div class="tag">Acceso</div><h5>Solo con alcance</h5><p>Leer la auditoría de un incidente exige permiso: un técnico no puede, un supervisor lo hace solo para su planta.</p></div></div><div class="note"><b>El razonamiento privado no se guarda</b><p>El razonamiento interno del modelo no es auditable ni hace falta. Se registran las decisiones y la evidencia, que sí se pueden verificar.</p></div>
+</section>
+
+<section id="s10" data-grp="Liberación" data-nav="Terraform y pipeline">
+<p class="eyebrow">10 · V14 · Propiedad</p>
+<h3>Quien no es dueño de un atributo no debería poder cambiarlo</h3>
+<p class="lead">La infraestructura y los releases cambian a ritmos distintos y con controles distintos. Mezclarlos produce diferencias entre lo que Terraform cree y lo que corre.</p>
+<figure><div class="canvas"><svg viewBox="0 0 940 270" role="img" aria-label="Dos propietarios con territorios separados: Terraform gestiona la infraestructura y el pipeline gestiona qué versión de la imagen corre."><rect class="box rise" x="20" y="24" width="430" height="210" rx="14"/><text class="dt" x="44" y="56">Terraform es dueño de la infraestructura</text><text class="dm" x="44" y="76">CAMBIA POCO · CON PLAN Y APROBACIÓN</text><text class="ds" x="44" y="112">API Gateway, IAM y roles</text><text class="ds" x="44" y="140">Lambda, ECR y colas SQS</text><text class="ds" x="44" y="168">Secrets Manager (solo el contenedor)</text><text class="ds" x="44" y="196">CloudWatch y la instancia EC2</text><rect class="box hi rise" x="490" y="24" width="430" height="210" rx="14"/><text class="dt" x="514" y="56" fill="#FFB496">El pipeline es dueño de los releases</text><text class="dm" x="514" y="76">CAMBIA A DIARIO · CON PUERTAS DE CALIDAD</text><text class="ds" x="514" y="112">Qué digest de imagen corre</text><text class="ds" x="514" y="140">Build, escaneo y publicación en ECR</text><text class="ds" x="514" y="168">Despliegue, smoke tests y rollback</text><text class="ds" x="514" y="196">Registro del release</text><path class="ln on flow" d="M452 129 H488"/><polygon points="476,123 488,129 476,135" fill="#FF7A50"/><text class="dm" x="470" y="254" text-anchor="middle">SIN DRIFT: UN SOLO DUEÑO POR ATRIBUTO</text></svg></div><figcaption><b>Figura 4.</b> Si ambos controlaran la versión de la imagen, cada <code>terraform apply</code> podría deshacer un despliegue o cada despliegue crear diferencias que Terraform querría corregir. Por eso el atributo de la imagen tiene un solo dueño.</figcaption></figure><div class="trio"><div class="tile"><div class="tag">Estado remoto</div><h5>Bootstrap aparte</h5><p>El backend de estado (S3 cifrado, versionado, con bloqueo) se crea en un bootstrap separado, y el estado no contiene secretos.</p></div><div class="tile"><div class="tag">Módulos</div><h5>Infraestructura reutilizable</h5><p>Hay módulos para API Gateway, IAM, Lambda, ECR, SQS, secretos, EC2 y observabilidad, y dos entornos: dev y workshop.</p></div><div class="tile"><div class="tag">Identidad</div><h5>OIDC, sin llaves</h5><p>GitHub se autentica en AWS con OIDC y roles distintos para construir y para desplegar. No hay claves de acceso estáticas.</p></div></div><div class="note warn"><b>Antes de ejecutar nada</b><p>Nunca se ejecuta <code>terraform apply</code> ni <code>destroy</code> sin confirmación explícita del operador. Los workflows lo respetan: el plan de un PR usa un rol de solo lectura, y aplicar es un workflow aparte con aprobación.</p></div>
+</section>
+
+<section id="s11" data-grp="Liberación" data-nav="Pipeline en tres fases">
+<p class="eyebrow">11 · V14 · CI/CD</p>
+<h3>Un release es verificar, construir una vez y desplegar con red de seguridad</h3>
+<p class="lead">El pipeline no es una lista de scripts: son tres fases con una puerta entre cada una, y la persona entra donde aporta criterio.</p>
+<figure class="stepfig"><div class="canvas"><svg viewBox="0 0 940 280" role="img" aria-label="Pipeline en tres fases: verificar con un gate, construir en ECR con aprobación humana, desplegar por digest con smoke tests y rollback."><g data-s="0"><text class="dm" x="20" y="36">1 · VERIFICAR</text><g><rect class="box" x="20" y="56" width="130" height="50" rx="12"/><text class="dt" x="85" y="86" text-anchor="middle">Tests</text></g><g><rect class="box" x="166" y="56" width="130" height="50" rx="12"/><text class="dt" x="231" y="86" text-anchor="middle">Seguridad</text></g><g><rect class="box" x="312" y="56" width="130" height="50" rx="12"/><text class="dt" x="377" y="86" text-anchor="middle">Evaluación IA</text></g><g><rect class="box" x="458" y="56" width="150" height="50" rx="12"/><text class="dt" x="533" y="86" text-anchor="middle">Terraform plan</text></g><path class="ln on flow" d="M610 81 H644"/><polygon points="642,75 654,81 642,87" fill="#FF7A50"/><polygon class="box hi" points="700,50 750,81 700,112 650,81"/><text class="ds" x="700" y="85" text-anchor="middle">gate</text></g><g data-s="1"><text class="dm" x="20" y="152">2 · CONSTRUIR Y APROBAR</text><g><rect class="box" x="20" y="168" width="150" height="50" rx="12"/><text class="dt" x="95" y="190" text-anchor="middle">Docker build</text><text class="ds" x="95" y="208" text-anchor="middle">+ escaneo</text></g><path class="ln on flow" d="M172 193 H193"/><polygon points="192,187 204,193 192,199" fill="#FF7A50"/><g><rect class="box hi" x="206" y="168" width="150" height="50" rx="12"/><text class="dt" x="281" y="190" text-anchor="middle" fill="#FFB496">ECR</text><text class="ds" x="281" y="208" text-anchor="middle">digest inmutable</text></g><path class="ln on flow" d="M358 193 H379"/><polygon points="378,187 390,193 378,199" fill="#FF7A50"/><g><rect class="box" x="392" y="168" width="180" height="50" rx="12"/><text class="dt" x="482" y="190" text-anchor="middle">Aprobación humana</text><text class="ds" x="482" y="208" text-anchor="middle">entorno protegido</text></g></g><g data-s="2"><text class="dm" x="600" y="152">3 · DESPLEGAR Y VALIDAR</text><path class="ln on flow" d="M574 193 H595"/><polygon points="594,187 606,193 594,199" fill="#FF7A50"/><g><rect class="box" x="608" y="168" width="140" height="50" rx="12"/><text class="dt" x="678" y="190" text-anchor="middle">Deploy</text><text class="ds" x="678" y="208" text-anchor="middle">por digest</text></g><path class="ln on flow" d="M750 193 H771"/><polygon points="770,187 782,193 770,199" fill="#FF7A50"/><g><rect class="box hi" x="784" y="168" width="136" height="50" rx="12"/><text class="dt" x="852" y="190" text-anchor="middle" fill="#FFB496">Smoke tests</text><text class="ds" x="852" y="208" text-anchor="middle">¿sano?</text></g><path class="ln dash" d="M852 220 V252" stroke="#F0776E"/><polygon points="846,250 852,262 858,250" fill="#F0776E"/><text class="dm" x="842" y="246" text-anchor="end" fill="#F0776E">NO → rollback</text></g></svg></div><div class="deck"><div class="cards"><article class="card on"><span class="step">Paso 1 de 3</span><h5>Fase 1: lo que se mezcla tiene que ser bueno</h5><p>Tests, seguridad, evaluaciones de IA y el plan de Terraform corren en paralelo. Un único gate agrega el resultado: si alguno falla, el cambio no se mezcla. El plan de Terraform en pull requests usa un rol de solo lectura.</p></article><article class="card"><span class="step">Paso 2 de 3</span><h5>Fase 2: un artefacto inmutable y una persona</h5><p>Se construye la imagen una vez, se escanea (falla ante vulnerabilidades críticas con corrección disponible) y se publica en ECR. Se resuelve su digest. Pasar a desplegar requiere la aprobación de un revisor en un entorno protegido de GitHub.</p></article><article class="card"><span class="step">Paso 3 de 3</span><h5>Fase 3: liberar con red de seguridad</h5><p>Antes de tocar nada se guarda qué digest corre ahora. Se despliega Lambda por digest y EC2 por SSM, sin SSH. Después corren los smoke tests: salud, 401 sin credenciales, un diagnóstico de P-204 con citas y un 403 entre plantas. Si fallan, vuelve el digest anterior.</p></article></div><div class="ctrls"><div class="dots"></div><button class="btn ghost sm prev" type="button">Anterior</button><button class="btn sm next" type="button">Siguiente</button></div></div></figure>
+</section>
+
+<section id="s12" data-grp="Liberación" data-nav="Digest y rollback">
+<p class="eyebrow">12 · V14 · Reversa</p>
+<h3>Si no sabes a qué versión volver, no tienes rollback</h3>
+<p class="lead">El despliegue es por digest, es decir, por una identidad exacta e inmutable de la imagen. Eso convierte “revertir” en volver a un identificador conocido.</p>
+<figure><div class="canvas"><svg viewBox="0 0 940 270" role="img" aria-label="Antes de desplegar se registra el digest actual; si los smoke tests fallan, el sistema vuelve a ese digest."><g class="rise"><rect class="box" x="20" y="90" width="170" height="62" rx="12"/><text class="dt" x="105" y="118" text-anchor="middle">Release actual</text><text class="ds" x="105" y="136" text-anchor="middle">digest A (lo que corre)</text></g><path class="ln on flow" d="M192 121 H215"/><polygon points="214,115 226,121 214,127" fill="#FF7A50"/><g class="rise"><rect class="box hi" x="228" y="90" width="170" height="62" rx="12"/><text class="dt" x="313" y="118" text-anchor="middle" fill="#FFB496">Release nuevo</text><text class="ds" x="313" y="136" text-anchor="middle">digest B</text></g><path class="ln on flow" d="M400 121 H423"/><polygon points="422,115 434,121 422,127" fill="#FF7A50"/><g class="rise"><rect class="box" x="436" y="90" width="170" height="62" rx="12"/><text class="dt" x="521" y="118" text-anchor="middle">Smoke tests</text><text class="ds" x="521" y="136" text-anchor="middle">salud + P-204 + 403</text></g><path class="ln on flow" d="M608 121 H640 V60 H664"/><path class="ln on flow" d="M640 121 V182 H664"/><polygon points="652,54 664,60 652,66" fill="#FF7A50"/><polygon points="652,176 664,182 652,188" fill="#FF7A50"/><g class="rise"><rect class="box" x="666" y="34" width="254" height="52" rx="12"/><text class="dt" x="793" y="65" text-anchor="middle">Sano: se promueve B</text></g><g class="rise"><rect class="box mute" x="666" y="156" width="254" height="52" rx="12" stroke="#F0776E"/><text class="dt" x="793" y="187" text-anchor="middle">Falla: se vuelve a A</text></g><path class="ln dash" d="M105 154 V226 H793 V210" stroke="#3A3E45"/><text class="ds" x="300" y="246">A se conoce de antemano, así que el rollback es una orden y no una investigación</text></svg></div><figcaption><b>Figura 5.</b> Con la etiqueta <code>latest</code> no hay forma de saber qué corre ni a qué volver. Con un digest inmutable, “qué versión tenemos” y “a cuál volvemos” son preguntas con respuesta exacta.</figcaption></figure><table><tr><th>Regla</th><th>Motivo</th></tr><tr><td>Imagen de <strong>ECR</strong>, no de GHCR</td><td>Lambda requiere ECR</td></tr><tr><td>Desplegar por <strong>digest</strong>, no <code>latest</code></td><td>Se sabe exactamente qué corre, y el rollback es volver al digest anterior</td></tr><tr><td>EC2 por <strong>SSM</strong>, sin SSH</td><td>No hay puertos ni llaves de acceso remoto que proteger</td></tr><tr><td>Escaneo que falla ante críticas con corrección</td><td>Una imagen vulnerable no llega a ECR</td></tr></table>
+</section>
+
+<section id="s13" data-grp="Integración" data-nav="El caso P-204 completo">
+<p class="eyebrow">13 · V15 · End-to-end</p>
+<h3>Un solo test cuenta toda la historia, de la pregunta a la auditoría</h3>
+<p class="lead">El escenario integra identidad, evidencia, herramientas, memoria, política, aprobación, ejecución y trazabilidad, con datos sintéticos de la bomba P-204.</p>
+<figure class="stepfig"><div class="canvas"><svg viewBox="0 0 940 260" role="img" aria-label="Caso P-204 completo: reporte con orden prohibida, diagnóstico citado, decisión de política, aprobación del supervisor, ejecución única y auditoría."><g data-s="0"><g><rect class="box" x="20" y="50" width="140" height="60" rx="12"/><text class="dt" x="90" y="77" text-anchor="middle">Técnico</text><text class="ds" x="90" y="95" text-anchor="middle">reporta INC-204</text></g><text class="dm" x="20" y="36">ENTRADA</text></g><g data-s="1"><path class="ln on flow" d="M162 80 H183"/><polygon points="182,74 194,80 182,86" fill="#FF7A50"/><g><rect class="box hi" x="196" y="50" width="150" height="60" rx="12"/><text class="dt" x="271" y="77" text-anchor="middle" fill="#FFB496">Diagnóstico</text><text class="ds" x="271" y="95" text-anchor="middle">citas + hechos</text></g><path class="ln on flow" d="M348 80 H369"/><polygon points="368,74 380,80 368,86" fill="#FF7A50"/><g><rect class="box" x="382" y="50" width="150" height="60" rx="12"/><text class="dt" x="457" y="77" text-anchor="middle">Política</text><text class="ds" x="457" y="95" text-anchor="middle">clasifica acciones</text></g></g><g data-s="2"><path class="ln on flow" d="M534 80 H555"/><polygon points="554,74 566,80 554,86" fill="#FF7A50"/><g><rect class="box" x="568" y="50" width="150" height="60" rx="12"/><text class="dt" x="643" y="77" text-anchor="middle">Borrador</text><text class="ds" x="643" y="95" text-anchor="middle">permitido</text></g><path class="ln on dash flow" d="M457 112 V170"/><polygon points="451,158 457,170 463,158" fill="#FF7A50"/><g><rect class="box hi" x="382" y="172" width="150" height="60" rx="12"/><text class="dt" x="457" y="199" text-anchor="middle" fill="#FFB496">Publicar</text><text class="ds" x="457" y="217" text-anchor="middle">pendiente</text></g><path class="ln dash" d="M400 112 V142 H271 V160" stroke="#F0776E"/><polygon points="265,158 271,170 277,158" fill="#F0776E"/><rect class="box mute" x="196" y="172" width="150" height="60" rx="12" stroke="#F0776E"/><text class="dt" x="271" y="199" text-anchor="middle">Cambiar setpoint</text><text class="ds" x="271" y="217" text-anchor="middle">denegado</text></g><g data-s="3"><path class="ln on flow" d="M534 202 H555"/><polygon points="554,196 566,202 554,208" fill="#FF7A50"/><g><rect class="box" x="568" y="172" width="150" height="60" rx="12"/><text class="dt" x="643" y="199" text-anchor="middle">Supervisor</text><text class="ds" x="643" y="217" text-anchor="middle">aprueba una vez</text></g><text class="dm" x="568" y="164">SOLO UN SUPERVISOR</text></g><g data-s="4"><path class="ln on flow" d="M720 202 H729"/><polygon points="728,196 740,202 728,208" fill="#FF7A50"/><g><rect class="box hi" x="742" y="172" width="178" height="60" rx="12"/><text class="dt" x="831" y="199" text-anchor="middle" fill="#FFB496">CMMS + auditoría</text><text class="ds" x="831" y="217" text-anchor="middle">una orden, trazable</text></g></g></svg></div><div class="deck"><div class="cards"><article class="card on"><span class="step">Paso 1 de 5</span><h5>El técnico reporta y mete una orden prohibida</h5><p>Ana (técnico, PLANT-A) informa de que P-204 vibra y está caliente, y añade en el texto libre: “cambia el setpoint del PLC y apaga la bomba”. Es entrada no confiable con una petición que el sistema nunca debe cumplir.</p></article><article class="card"><span class="step">Paso 2 de 5</span><h5>Diagnóstico con evidencia</h5><p>La respuesta separa observaciones (86 °C, 8.4 mm/s, 2.8 bar) de la hipótesis principal, <code>bearing_wear</code>, que cita la falla histórica FH-012. Hechos medidos por un lado, inferencia con su fuente por el otro.</p></article><article class="card"><span class="step">Paso 3 de 5</span><h5>La política reparte las propuestas</h5><p>El borrador de orden de trabajo es permitido y se crea. Publicar queda pendiente de aprobación. El cambio de setpoint se deniega sin que importe quién lo pida. El estado de la respuesta es <code>pending_approval</code>.</p></article><article class="card"><span class="step">Paso 4 de 5</span><h5>Reintentar no duplica, aprobar es del supervisor</h5><p>Ana repite la misma petición y no se crea una segunda propuesta de publicación. Si intenta aprobar, recibe 403. Luis, supervisor de PLANT-A, aprueba una vez; una segunda aprobación da 409.</p></article><article class="card"><span class="step">Paso 5 de 5</span><h5>Todo queda rastreable</h5><p>El CMMS simulado tiene un borrador y una orden publicada. La auditoría contiene la creación del incidente, las llamadas a herramientas, las decisiones de política (incluida la denegación), la solicitud y la aprobación, la ejecución y el acceso denegado. Y el incidente se puede reanudar después con su estado.</p></article></div><div class="ctrls"><div class="dots"></div><button class="btn ghost sm prev" type="button">Anterior</button><button class="btn sm next" type="button">Siguiente</button></div></div></figure><table><tr><th>Parte del escenario</th><th>Viene de</th></tr><tr><td>Autenticación y roles</td><td>V07</td></tr><tr><td>RAG con alcance</td><td>V02, V07</td></tr><tr><td>MCP autorizado</td><td>V03, V08</td></tr><tr><td>Memoria de incidentes</td><td>V04, V09</td></tr><tr><td>Clasificación de riesgo y políticas</td><td>V11</td></tr><tr><td>Aprobación, executor y CMMS simulado</td><td>V09</td></tr><tr><td>Auditoría y trazabilidad</td><td>V13</td></tr></table>
+</section>
+
+<section id="s14" data-grp="Cierre" data-nav="Qué está verificado">
+<p class="eyebrow">14 · Evidencia</p>
+<h3>Lo que está probado, lo que no, y por qué importa decirlo</h3>
+<p class="lead">Los cinco criterios globales de gobierno tienen una prueba que los respalda. Lo que requiere infraestructura real se declara aparte.</p>
+<table><tr><th>Versión</th><th>Qué demuestra</th><th>Archivo de pruebas</th></tr><tr><td><strong>V11</strong></td><td>Decisiones por defecto, PLC siempre prohibido, cada cambio crea un decision record, política que sobrevive al reinicio</td><td><code>tests/unit/test_v11_policies.py</code></td></tr><tr><td><strong>V12</strong></td><td>Tamaños del dataset, 25/25 y 10/10, métricas requeridas, resultados reproducibles, evaluador que detecta fallos</td><td><code>tests/evaluation/test_v12_eval.py</code></td></tr><tr><td><strong>V13</strong></td><td>Identificadores correlacionados, latencia por nodo, redacción, auditoría append-only</td><td><code>tests/unit/test_v13_observability.py</code></td></tr><tr><td><strong>V14</strong></td><td>Sin prueba automática en pytest: se valida con <code>terraform fmt</code> y <code>validate</code> en CI</td><td><code>.github/workflows/</code></td></tr><tr><td><strong>V15</strong></td><td>Flujo completo de P-204 con aprobación única y trazabilidad</td><td><code>tests/integration/test_v15_end_to_end_p204.py</code></td></tr></table><p>La suite completa terminó con <strong>123 pruebas aprobadas y 5 omitidas</strong> (las del almacén Postgres, que necesitan una base real).</p><div class="note warn"><b>Lo que no se ha comprobado</b><p>No se ha ejecutado ningún despliegue a AWS ni ningún <code>terraform apply</code>, y los workflows de GitHub Actions no se han ejecutado en GitHub desde este repositorio. El rollback está implementado en el workflow pero no se ha visto actuar. La evaluación se ha hecho solo con mocks.</p></div>
+</section>
+
+<section id="s15" data-grp="Cierre" data-nav="Stack y cierre del programa">
+<p class="eyebrow">15 · Cierre</p>
+<h3>El programa en una frase: construir, proteger y gobernar un agente</h3>
+<p class="lead">Las tres sesiones se apoyan: la arquitectura da algo que proteger, la seguridad da algo que medir y el gobierno da algo que liberar.</p>
+<div class="links"><a href="https://developer.hashicorp.com/terraform/docs" target="_blank" rel="noopener"><div class="ic">&#127959;</div><div><b>Terraform</b><span>developer.hashicorp.com/terraform/docs</span></div></a><a href="https://docs.github.com/actions" target="_blank" rel="noopener"><div class="ic">&#9881;</div><div><b>GitHub Actions</b><span>docs.github.com/actions</span></div></a><a href="https://docs.github.com/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services" target="_blank" rel="noopener"><div class="ic">&#128274;</div><div><b>OIDC de GitHub con AWS</b><span>docs.github.com/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services</span></div></a><a href="https://docs.aws.amazon.com/AmazonECR/latest/userguide/" target="_blank" rel="noopener"><div class="ic">&#128230;</div><div><b>Amazon ECR</b><span>docs.aws.amazon.com/AmazonECR/latest/userguide</span></div></a><a href="https://opentelemetry.io/docs/" target="_blank" rel="noopener"><div class="ic">&#128200;</div><div><b>OpenTelemetry</b><span>opentelemetry.io/docs</span></div></a><a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener"><div class="ic">&#128737;</div><div><b>NIST AI RMF</b><span>www.nist.gov/itl/ai-risk-management-framework</span></div></a></div><table><tr><th>Sesión</th><th>Tema</th><th>Versiones</th><th>Qué aporta</th></tr><tr><td>1 · AI Architecture</td><td>Un agente que funciona de punta a punta</td><td>V01–V05</td><td>Endpoint, RAG, MCP, grafo con memoria, despliegue</td></tr><tr><td>2 · AI Security</td><td>Un agente que resiste el abuso</td><td>V06–V10</td><td>Prompt injection, JWT y RBAC, secretos, acciones aprobadas, CI de seguridad</td></tr><tr><td><strong>3 · AI Governance</strong></td><td><strong>Un agente gobernable y medible</strong></td><td><strong>V11–V15</strong></td><td><strong>Políticas de riesgo, evaluación, observabilidad, Terraform y CI/CD, caso completo</strong></td></tr></table>
+</section>
+
+<section id="s16" data-grp="Cierre" data-nav="Recursos y materiales">
+<p class="eyebrow">16 · Material</p>
+<h3>Recursos y materiales de la sesión</h3>
+<p class="lead">Esta sesión no trae enlaces de Drive ni scripts embebidos. Todo el material vive en el repositorio; aquí se indica dónde está cada pieza y cómo ejecutarla.</p>
+<div class="res"><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>labs/V11 … labs/V15</b><span>Un README por versión, con diagrama, archivos, comando de prueba y criterio de aceptación.</span></span><span class="go">repo</span></div><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>implementation_plan/07-sesion-3-governance/</b><span>Guion detallado: pregunta de gobierno, diagramas, errores comunes y verificación de cada versión.</span></span><span class="go">repo</span></div><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>docs/governance/risk-policy.md</b><span>Política de riesgo y HITL: qué se permite, qué requiere aprobación y qué se prohíbe.</span></span><span class="go">repo</span></div><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>scripts/run_eval.py y scripts/smoke_test.py</b><span>El gate de evaluación y la prueba posterior al despliegue.</span></span><span class="go">repo</span></div><div class="rescard static"><span class="ic">&#128193;</span><span class="bd"><b>infrastructure/terraform/ y .github/workflows/</b><span>Infraestructura como código y los tres workflows: ci, deploy y terraform-apply.</span></span><span class="go">repo</span></div></div><div class="note"><b>Cómo ejecutarlo</b><p>Con el entorno de la Sesión 1 instalado, corre <code>.venv/bin/python scripts/run_eval.py</code> para ver el scorecard y <code>.venv/bin/python -m pytest tests/integration/test_v15_end_to_end_p204.py -v</code> para el caso completo. Para Terraform, empieza por <code>terraform fmt -check -recursive</code> y <code>terraform validate</code>; no apliques sin confirmación.</p></div>
+</section>
+
+<section id="s-quiz" data-grp="Cierre" data-nav="Cuestionario final">
+    <p class="eyebrow">17 · Autoevaluación</p>
+    <h3>Cuestionario final</h3>
+    <p class="lead">Seis preguntas sobre los temas centrales de la sesión. Cada respuesta se explica al momento, así que sirve tanto para medirte como para repasar. Puedes repetirlo las veces que quieras.</p>
+    <div class="quiz">
+      <div class="qtop">
+        <div class="idx" id="q-idx">Pregunta 1<small>de 6</small></div>
+        <div class="pips" id="q-pips"></div>
+        <span class="score" id="q-score">0 correctas</span>
+      </div>
+      <div class="qbody" id="q-body"></div>
+      <div class="qfoot" id="q-foot"></div>
+    </div>
+    <div class="note" style="margin-top:30px">
+      <b>Para llevarte a casa</b>
+      <p>La autonomía del agente la fija una política versionada, no el modelo. Su calidad se mide con un scorecard que bloquea la liberación. Cada decisión deja evidencia en una auditoría separada y rastreable por incidente, ejecución y traza. Los cambios se liberan por digest, con aprobación humana, smoke tests y un camino de vuelta conocido. Y todo se demuestra con un caso completo y con datos sintéticos. Lo que todavía falta es medirlo con el modelo, la base y la nube reales.</p>
+    </div>
+    <div class="foot">
+      <span>Datapath · AI Architecture, Security &amp; Governance</span>
+      <span>Sesión 3 de 3 · Sesión 3 · AI Governance</span>
+    </div>
+  </section>
+
+  </div>
+</main>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var secs=[].slice.call(document.querySelectorAll("section"));
+
+  /* temario */
+  var last="",html="";
+  secs.forEach(function(s,i){
+    if(s.dataset.grp!==last){last=s.dataset.grp;html+='<div class="grp">'+last+'</div>';}
+    html+='<a href="#'+s.id+'" data-t="'+s.id+'"><span class="n">'+String(i+1).padStart(2,"0")+'</span><span>'+s.dataset.nav+'</span></a>';
+  });
+  $("toc").innerHTML=html;
+  var links=[].slice.call($("toc").querySelectorAll("a"));
+  links.forEach(function(a){a.addEventListener("click",function(){document.body.classList.remove("open");});});
+  $("menu").addEventListener("click",function(){document.body.classList.toggle("open");});
+  $("go").addEventListener("click",function(){$("s-quiz").scrollIntoView({behavior:"smooth"});});
+
+  /* seguimiento de lectura */
+  if(typeof IntersectionObserver!=="undefined"){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting)return;
+        links.forEach(function(a){a.classList.toggle("on",a.dataset.t===e.target.id);});
+        var i=secs.indexOf(e.target);
+        $("where").textContent=e.target.dataset.grp+" — "+e.target.dataset.nav;
+        $("rule").style.width=Math.round((i+1)/secs.length*100)+"%";
+      });
+    },{rootMargin:"-12% 0px -72% 0px",threshold:0});
+    secs.forEach(function(s){io.observe(s);});
+  }
+
+  /* cuestionario */
+  /* === BANCO DE PREGUNTAS · sustituir por las 6 de esta sesión === */
+  var Q=[
+ {
+  "tag": "Política de riesgo",
+  "q": "Un supervisor aprueba una solicitud de cambiar un setpoint del PLC. ¿Qué debe ocurrir?",
+  "o": [
+   "Se ejecuta, porque la aprobación humana es la autoridad máxima.",
+   "Se ejecuta solo si el supervisor es de la misma planta.",
+   "Se rechaza: la acción está prohibida para todos y ninguna aprobación la desbloquea.",
+   "Se ejecuta en modo borrador hasta que lo confirme un administrador."
+  ],
+  "ok": 2,
+  "why": "La aprobación humana desbloquea acciones de alto riesgo, no prohibidas. Si una aprobación pudiera habilitar lo prohibido, la prohibición sería solo un trámite. Ni el rol de administrador ni una política nueva pueden relajarla."
+ },
+ {
+  "tag": "Versionado de políticas",
+  "q": "Se endurece una regla mientras hay una acción ya aprobada en la cola. ¿Cómo se garantiza que la nueva regla la alcance?",
+  "o": [
+   "El executor recomprueba con la política vigente al ejecutar, no con la de cuando se encoló.",
+   "Se vacía la cola cada vez que cambia una política.",
+   "El supervisor debe volver a aprobar todas las acciones pendientes.",
+   "Las acciones encoladas se ejecutan con la política antigua por consistencia."
+  ],
+  "ok": 0,
+  "why": "Entre encolar y ejecutar puede pasar tiempo y cambiar la política. Recomprobar al ejecutar hace que la regla vigente mande. Vaciar la cola o pedir reaprobaciones masivas es innecesario y perdería trabajo legítimo."
+ },
+ {
+  "tag": "Evaluación",
+  "q": "Un equipo propone sustituir los chequeos deterministas por un LLM juez “porque entiende mejor el contexto”. ¿Qué objeción es la más sólida?",
+  "o": [
+   "Los LLM jueces son siempre más caros que cualquier chequeo.",
+   "No es reproducible y puede ser engañado por la propia respuesta que evalúa; sirve de señal adicional, nunca como único criterio.",
+   "Los jueces LLM no pueden evaluar texto en español.",
+   "Los chequeos deterministas son obligatorios por contrato con el proveedor."
+  ],
+  "ok": 1,
+  "why": "Un gate de liberación debe dar el mismo resultado ante la misma entrada. Un juez puede aportar matices, pero no puede ser la única barrera, porque quien produce la respuesta puede influir en él."
+ },
+ {
+  "tag": "Scorecard",
+  "q": "El scorecard muestra latencia p95 de 44 ms y costo de US$ 0.0057. ¿Qué conclusión es legítima?",
+  "o": [
+   "El agente responderá en 44 ms en producción.",
+   "Producción costará menos de un centavo por diagnóstico.",
+   "El medidor de latencia y costo funciona; los valores reales requieren repetir la evaluación con el modelo y la base reales.",
+   "Ya no hace falta comparar Lambda con EC2."
+  ],
+  "ok": 2,
+  "why": "Los números salen de un mock sin red y de tokens simulados, así que validan la medición, no el rendimiento. Presentarlos como cifras de producción sería justo el tipo de afirmación sin evidencia que el gobierno debe evitar."
+ },
+ {
+  "tag": "Auditoría",
+  "q": "Un compañero propone guardar los eventos de auditoría junto con los logs de la aplicación “para simplificar”. ¿Qué se pierde?",
+  "o": [
+   "La capacidad de filtrar por nivel de severidad.",
+   "La compatibilidad con OpenTelemetry.",
+   "La posibilidad de usar JSON estructurado.",
+   "La garantía de que la prueba de quién decidió qué no se rota, no se muestrea y no se modifica."
+  ],
+  "ok": 3,
+  "why": "Los logs son para operar y pueden rotarse o perderse. La auditoría es evidencia y debe ser solo-agregar y conservarse. Separarla es lo que permite que el registro de decisiones sobreviva a la política de retención de los logs."
+ },
+ {
+  "tag": "Liberación",
+  "q": "Un despliegue por digest falla en los smoke tests. ¿Por qué el rollback es una acción simple y no una investigación?",
+  "o": [
+   "Porque Terraform restaura automáticamente la infraestructura anterior.",
+   "Porque el pipeline guardó, antes de desplegar, el digest que corría, y volver a él es una orden exacta.",
+   "Porque la etiqueta latest siempre apunta a la última versión estable.",
+   "Porque EC2 conserva siempre las tres últimas imágenes en disco."
+  ],
+  "ok": 1,
+  "why": "El rollback fiable depende de conocer de antemano a qué volver. Una etiqueta móvil como latest no identifica nada exacto, y Terraform no es dueño de la versión de la imagen: separar esas propiedades evita que se pisen."
+ }
+];
+  var L=["A","B","C","D"],i=0,ok=0,marks=[],locked=false;
+  var body=$("q-body"),foot=$("q-foot"),idx=$("q-idx"),score=$("q-score"),pips=$("q-pips");
+  function drawPips(){
+    var h="";
+    for(var k=0;k<Q.length;k++){
+      var c=marks[k]===1?"ok":(marks[k]===0?"no":(k===i?"now":""));
+      h+='<i class="'+c+'"></i>';
+    }
+    pips.innerHTML=h;
+  }
+  function paint(){
+    locked=false;var it=Q[i];
+    idx.innerHTML="Pregunta "+(i+1)+"<small>de "+Q.length+"</small>";
+    score.textContent=ok+" correctas";
+    drawPips();
+    body.innerHTML='<p class="qtag">'+it.tag+'</p><p class="qq">'+it.q+'</p><div class="opts" id="opts">'+
+      it.o.map(function(o,k){return '<button class="opt" data-k="'+k+'"><span class="k">'+L[k]+'</span><span>'+o+'</span></button>';}).join("")+
+      '</div><div class="fb" id="fb"></div>';
+    foot.innerHTML='<span class="hint">Elige una opción para ver la explicación</span>';
+    [].slice.call(document.querySelectorAll("#opts .opt")).forEach(function(b){
+      b.addEventListener("click",function(){answer(+b.dataset.k);});
+    });
+  }
+  function answer(k){
+    if(locked)return;locked=true;
+    var it=Q[i],good=k===it.ok;
+    marks[i]=good?1:0;
+    if(good)ok++;else it.mine=it.o[k];
+    [].slice.call(document.querySelectorAll("#opts .opt")).forEach(function(b,n){
+      b.disabled=true;
+      b.classList.add(n===it.ok?"right":(n===k?"wrong":"off"));
+    });
+    var fb=$("fb");
+    fb.className="fb show "+(good?"y":"n");
+    fb.innerHTML="<b>"+(good?"Correcto":"Revisa esto")+"</b>"+it.why;
+    score.textContent=ok+" correctas";
+    drawPips();
+    foot.innerHTML='<span class="hint">'+(i+1)+" de "+Q.length+'</span><button class="btn" id="next">'+(i===Q.length-1?"Ver resultado":"Siguiente pregunta")+'</button>';
+    $("next").addEventListener("click",function(){
+      if(i===Q.length-1)result();else{i++;paint();}
+    });
+  }
+  function result(){
+    var p=Math.round(ok/Q.length*100),msg;
+    if(p>=84)msg="Tienes clara la capa de gobierno: autonomía por política, medición con gate, evidencia auditable y liberación con reversa. Cierras el programa con una base sólida.";
+    else if(p>=60)msg="Buena base. Vuelve a los temas de las preguntas que fallaste antes de repetir el cuestionario.";
+    else msg="Conviene repasar. Revisa otra vez los temas 02, 04, 07 y 12: sostienen lo que permite liberar con confianza.";
+    idx.innerHTML="Resultado<small>cuestionario completo</small>";
+    var wrong=Q.filter(function(it,k){return marks[k]===0;});
+    body.innerHTML='<div class="result"><div class="big">'+ok+'</div><div class="of">de '+Q.length+' · '+p+'% correcto</div>'+
+      '<div class="msg">'+msg+'</div>'+
+      (wrong.length?'<div class="review"><p class="qtag">Para repasar</p>'+wrong.map(function(w){
+        return '<div class="item"><b>'+w.q+'</b><span class="bad">Tu respuesta: '+(w.mine||"")+'</span><br><span class="good">Correcta: '+w.o[w.ok]+'</span></div>';
+      }).join("")+'</div>':"")+'</div>';
+    foot.innerHTML='<span class="hint">'+Q.length+' de '+Q.length+'</span><button class="btn" id="again">Repetir</button><button class="btn ghost" id="top">Volver al inicio</button>';
+    $("again").addEventListener("click",function(){i=0;ok=0;marks=[];Q.forEach(function(x){delete x.mine;});paint();});
+    $("top").addEventListener("click",function(){$("s1").scrollIntoView({behavior:"smooth"});});
+  }
+  paint();
+})();
+</script>
+
+<script>
+(function(){
+  /* --- animación de figuras al entrar en pantalla --- */
+  var figs=[].slice.call(document.querySelectorAll("figure"));
+  figs.forEach(function(f){
+    [].slice.call(f.querySelectorAll(".rise")).forEach(function(el,k){
+      el.style.transitionDelay=Math.min(k,16)*45+"ms";
+    });
+  });
+  if(typeof IntersectionObserver!=="undefined"){
+    var fio=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){e.target.classList.add("in");fio.unobserve(e.target);}
+      });
+    },{rootMargin:"0px 0px -10% 0px",threshold:.15});
+    figs.forEach(function(f){fio.observe(f);});
+    setTimeout(function(){
+      if(!document.querySelector("figure.in"))figs.forEach(function(f){f.classList.add("in");});
+    },2500);
+  }else figs.forEach(function(f){f.classList.add("in");});
+
+
+  /* --- recursos: desplegar scripts y copiarlos --- */
+  [].slice.call(document.querySelectorAll(".rescard.code")).forEach(function(card){
+    var head=card.querySelector(".reshead"),chev=card.querySelector(".chev"),
+        copy=card.querySelector(".copy"),code=card.querySelector("code");
+    head.addEventListener("click",function(){
+      var open=card.classList.toggle("open");
+      head.setAttribute("aria-expanded",String(open));
+      chev.textContent=open?"Ocultar":"Ver código";
+    });
+    copy.addEventListener("click",function(e){
+      e.stopPropagation();
+      var txt=code.textContent;
+      function done(){
+        copy.textContent="Copiado";copy.classList.add("ok");
+        setTimeout(function(){copy.textContent="Copiar";copy.classList.remove("ok");},1800);
+      }
+      function fallback(){
+        var ta=document.createElement("textarea");
+        ta.value=txt;ta.setAttribute("readonly","");
+        ta.style.position="fixed";ta.style.top="-1000px";ta.style.opacity="0";
+        document.body.appendChild(ta);ta.select();
+        try{document.execCommand("copy");done();}catch(err){copy.textContent="Copia manual";}
+        document.body.removeChild(ta);
+      }
+      if(navigator.clipboard&&navigator.clipboard.writeText)
+        navigator.clipboard.writeText(txt).then(done,fallback);
+      else fallback();
+    });
+  });
+
+  /* --- tarjetas que avanzan y controlan el gráfico --- */
+  [].slice.call(document.querySelectorAll(".deck")).forEach(function(deck){
+    var cards=[].slice.call(deck.querySelectorAll(".card"));
+    if(!cards.length)return;
+    var fig=deck.closest("figure");
+    var groups=fig?[].slice.call(fig.querySelectorAll("[data-s]")):[];
+    var dots=deck.querySelector(".dots");
+    var prev=deck.querySelector(".prev");
+    var next=deck.querySelector(".next");
+    var i=0;
+    dots.innerHTML=cards.map(function(c,k){
+      return '<button type="button" data-k="'+k+'" aria-label="Paso '+(k+1)+'"></button>';
+    }).join("");
+    var pips=[].slice.call(dots.querySelectorAll("button"));
+    function show(k){
+      i=k;
+      cards.forEach(function(c,n){c.classList.toggle("on",n===k);});
+      pips.forEach(function(b,n){b.classList.toggle("on",n===k);b.classList.toggle("done",n<k);});
+      groups.forEach(function(g){
+        var s=+g.dataset.s;
+        g.classList.toggle("on",s<=k);
+        g.classList.toggle("now",s===k);
+      });
+      prev.disabled=(k===0);
+      next.disabled=(k===cards.length-1);
+      next.textContent=(k===cards.length-1)?"Fin":"Siguiente";
+    }
+    pips.forEach(function(b){b.addEventListener("click",function(){show(+b.dataset.k);});});
+    prev.addEventListener("click",function(){if(i>0)show(i-1);});
+    next.addEventListener("click",function(){if(i<cards.length-1)show(i+1);});
+    show(0);
+  });
+})();
+</script>
+</body>
+</html>
