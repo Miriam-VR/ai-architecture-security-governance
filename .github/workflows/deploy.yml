@@ -1,0 +1,147 @@
+name: Deploy
+
+# Build once -> push immutable image to ECR -> (human approval via GitHub Environment) -> deploy BY DIGEST -> smoke test -> rollback on failure.
+# Terraform owns infrastructure; THIS pipeline owns the image version (Lambda image_uri has ignore_changes in Terraform).
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, workshop]
+        default: dev
+      deploy_ec2:
+        description: Also deploy the EC2 container
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment || 'dev' }}
+  cancel-in-progress: false
+
+env:
+  TARGET_ENV: ${{ inputs.environment || 'dev' }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+jobs:
+  build:
+    name: Build + scan + push (immutable tags)
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      lambda_image: ${{ steps.push.outputs.lambda_image }}
+      ec2_image: ${{ steps.push.outputs.ec2_image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/maintenance-ai-gha-build
+          aws-region: ${{ vars.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          REPO=maintenance-ai-${TARGET_ENV}
+          REG=${{ steps.ecr.outputs.registry }}
+          docker build -f Dockerfile.lambda -t "$REG/$REPO:lambda-$SHA" .
+          docker build -f Dockerfile.ec2    -t "$REG/$REPO:ec2-$SHA" .
+      - name: Scan (fails on fixable CRITICAL)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.ecr.outputs.registry }}/maintenance-ai-${{ env.TARGET_ENV }}:ec2-${{ github.event.workflow_run.head_sha || github.sha }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Push and resolve digests
+        id: push
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          REPO=maintenance-ai-${TARGET_ENV}
+          REG=${{ steps.ecr.outputs.registry }}
+          for kind in lambda ec2; do
+            docker push "$REG/$REPO:$kind-$SHA"
+            DIGEST=$(aws ecr describe-images --repository-name "$REPO" --image-ids imageTag="$kind-$SHA" --query 'imageDetails[0].imageDigest' --output text)
+            echo "${kind}_image=$REG/$REPO@$DIGEST" >> "$GITHUB_OUTPUT"
+          done
+      - name: Summary
+        run: |
+          { echo "### Built images (immutable digests)"; echo "- lambda: \`${{ steps.push.outputs.lambda_image }}\`"; echo "- ec2: \`${{ steps.push.outputs.ec2_image }}\`"; } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy by digest (requires reviewer approval)
+    needs: build
+    runs-on: ubuntu-latest
+    # Environment "<env>-deploy" must have Required reviewers => this is the human approval gate.
+    environment: ${{ inputs.environment || 'dev' }}-deploy
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install boto3 pyjwt
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/maintenance-ai-gha-deploy
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Remember what is running now (rollback target)
+        id: prev
+        run: |
+          N=maintenance-ai-${TARGET_ENV}
+          echo "api=$(aws lambda get-function --function-name $N-api --query 'Code.ImageUri' --output text)" >> "$GITHUB_OUTPUT"
+          echo "worker=$(aws lambda get-function --function-name $N-worker --query 'Code.ImageUri' --output text)" >> "$GITHUB_OUTPUT"
+      - name: Deploy Lambda (api + worker) by digest
+        run: |
+          N=maintenance-ai-${TARGET_ENV}
+          for f in $N-api $N-worker; do
+            aws lambda update-function-code --function-name $f --image-uri "${{ needs.build.outputs.lambda_image }}" >/dev/null
+            aws lambda wait function-updated --function-name $f
+          done
+      - name: Deploy EC2 container by digest (SSM, no SSH)
+        id: ec2
+        if: ${{ vars.EC2_INSTANCE_ID != '' && (github.event_name != 'workflow_dispatch' || inputs.deploy_ec2) }}
+        run: |
+          CMD=$(aws ssm send-command --document-name AWS-RunShellScript --instance-ids "${{ vars.EC2_INSTANCE_ID }}" \
+                --parameters 'commands=["/usr/local/bin/deploy-app.sh ${{ needs.build.outputs.ec2_image }}"]' --query 'Command.CommandId' --output text)
+          aws ssm wait command-executed --command-id "$CMD" --instance-id "${{ vars.EC2_INSTANCE_ID }}"
+          aws ssm get-command-invocation --command-id "$CMD" --instance-id "${{ vars.EC2_INSTANCE_ID }}" --query '[Status,StandardOutputContent]' --output text
+      - name: Smoke tests
+        id: smoke
+        run: |
+          python scripts/smoke_test.py --base-url "${{ vars.API_URL }}" --api-key "${{ secrets.API_KEY }}" \
+            --secret-id "maintenance-ai/${TARGET_ENV}/app" --region "$AWS_REGION" --route /diagnose/quick
+          if [ -n "${{ vars.EC2_INSTANCE_ID }}" ]; then
+            python scripts/smoke_test.py --base-url "${{ vars.API_URL }}" --api-key "${{ secrets.API_KEY }}" \
+              --secret-id "maintenance-ai/${TARGET_ENV}/app" --region "$AWS_REGION" --route /diagnose/extended
+          fi
+      - name: ROLLBACK to previous digest
+        if: ${{ failure() && steps.prev.outcome == 'success' }}
+        run: |
+          N=maintenance-ai-${TARGET_ENV}
+          aws lambda update-function-code --function-name $N-api    --image-uri "${{ steps.prev.outputs.api }}"    >/dev/null
+          aws lambda update-function-code --function-name $N-worker --image-uri "${{ steps.prev.outputs.worker }}" >/dev/null
+          echo "::error::Smoke test failed - Lambda rolled back to ${{ steps.prev.outputs.api }}. EC2 rolls back itself inside deploy-app.sh if its health check fails."
+      - name: Record release
+        if: success()
+        run: |
+          { echo "### Released to ${TARGET_ENV}"; echo "- lambda: \`${{ needs.build.outputs.lambda_image }}\`"; echo "- ec2: \`${{ needs.build.outputs.ec2_image }}\`"; echo "- previous lambda (rollback target): \`${{ steps.prev.outputs.api }}\`"; } >> "$GITHUB_STEP_SUMMARY"

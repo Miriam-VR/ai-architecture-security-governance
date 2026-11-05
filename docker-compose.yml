@@ -1,0 +1,10 @@
+# Local run of the EC2-style container (mock mode by default; no cloud needed).
+services:
+  api:
+    build: { context: ., dockerfile: Dockerfile.ec2 }
+    env_file: [.env]
+    environment:
+      LLM_MODE: ${LLM_MODE:-mock}
+      STORE_MODE: ${STORE_MODE:-memory}
+    ports: ["8000:8000"]
+    restart: unless-stopped

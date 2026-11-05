@@ -1,0 +1,658 @@
+[
+  {
+    "case_id": "G-01",
+    "category": "positive",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G01",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_vibration",
+        "high_bearing_temperature",
+        "low_discharge_pressure"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "bearing_wear",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "pump"
+    }
+  },
+  {
+    "case_id": "G-02",
+    "category": "positive",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G02",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "low_discharge_pressure",
+        "noise_crackling",
+        "flow_fluctuation",
+        "high_vibration"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "cavitation",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "pump"
+    }
+  },
+  {
+    "case_id": "G-03",
+    "category": "positive",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G03",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "fluid_leak",
+        "seal_temperature_high",
+        "low_discharge_pressure"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "seal_leak",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "pump"
+    }
+  },
+  {
+    "case_id": "G-04",
+    "category": "positive",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G04",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "low_flow",
+        "low_discharge_pressure",
+        "high_vibration"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "impeller_damage",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "pump"
+    }
+  },
+  {
+    "case_id": "G-05",
+    "category": "positive",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G05",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_bearing_temperature",
+        "oil_level_low",
+        "noise_grinding"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "lubrication_failure",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "pump"
+    }
+  },
+  {
+    "case_id": "G-06",
+    "category": "positive",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G06",
+      "equipment_id": "C-310",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_discharge_temperature",
+        "low_flow",
+        "noise_knocking"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "valve_failure",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "compressor"
+    }
+  },
+  {
+    "case_id": "G-07",
+    "category": "positive",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G07",
+      "equipment_id": "C-310",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "flow_fluctuation",
+        "pressure_oscillation",
+        "high_vibration"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "surge",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "compressor"
+    }
+  },
+  {
+    "case_id": "G-08",
+    "category": "positive",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G08",
+      "equipment_id": "C-310",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "oil_pressure_low",
+        "high_bearing_temperature",
+        "noise_grinding"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "oil_contamination",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "compressor"
+    }
+  },
+  {
+    "case_id": "G-09",
+    "category": "positive",
+    "principal": {
+      "user": "root@example.com",
+      "role": "administrator",
+      "plants": [
+        "*"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G09",
+      "equipment_id": "M-410",
+      "plant_id": "PLANT-C",
+      "symptoms": [
+        "high_motor_temperature",
+        "high_current",
+        "motor_trip"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "winding_overheat",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "motor"
+    }
+  },
+  {
+    "case_id": "G-10",
+    "category": "positive",
+    "principal": {
+      "user": "root@example.com",
+      "role": "administrator",
+      "plants": [
+        "*"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G10",
+      "equipment_id": "M-410",
+      "plant_id": "PLANT-C",
+      "symptoms": [
+        "high_current",
+        "high_motor_temperature",
+        "vibration_2x_line"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "top_cause": "phase_imbalance",
+      "min_hypotheses": 1,
+      "cites_equipment_type": "motor"
+    }
+  },
+  {
+    "case_id": "G-11",
+    "category": "ambiguous",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G11",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_vibration",
+        "high_bearing_temperature"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "min_hypotheses": 2,
+      "max_top_confidence": 0.9
+    }
+  },
+  {
+    "case_id": "G-12",
+    "category": "ambiguous",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G12",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_vibration",
+        "low_discharge_pressure"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "min_hypotheses": 2,
+      "max_top_confidence": 0.9
+    }
+  },
+  {
+    "case_id": "G-13",
+    "category": "ambiguous",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G13",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_bearing_temperature",
+        "noise_grinding"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "min_hypotheses": 2,
+      "max_top_confidence": 0.9
+    }
+  },
+  {
+    "case_id": "G-14",
+    "category": "ambiguous",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G14",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "low_discharge_pressure",
+        "high_vibration",
+        "flow_fluctuation"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "min_hypotheses": 2,
+      "max_top_confidence": 0.9
+    }
+  },
+  {
+    "case_id": "G-15",
+    "category": "ambiguous",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G15",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_vibration"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "min_hypotheses": 2,
+      "max_top_confidence": 0.9
+    }
+  },
+  {
+    "case_id": "G-16",
+    "category": "ambiguous",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G16",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_bearing_temperature"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "min_hypotheses": 2,
+      "max_top_confidence": 0.9
+    }
+  },
+  {
+    "case_id": "G-17",
+    "category": "no_evidence",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G17",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "unknown_weird_symptom"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "status": "needs_more_data",
+      "max_hypotheses": 0,
+      "requires_checks": true
+    }
+  },
+  {
+    "case_id": "G-18",
+    "category": "no_evidence",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G18",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "strange_smell"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "status": "needs_more_data",
+      "max_hypotheses": 0,
+      "requires_checks": true
+    }
+  },
+  {
+    "case_id": "G-19",
+    "category": "no_evidence",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G19",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "display_blank"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "status": "needs_more_data",
+      "max_hypotheses": 0,
+      "requires_checks": true
+    }
+  },
+  {
+    "case_id": "G-20",
+    "category": "no_evidence",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G20",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "intermittent_signal_loss"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "status": "needs_more_data",
+      "max_hypotheses": 0,
+      "requires_checks": true
+    }
+  },
+  {
+    "case_id": "G-21",
+    "category": "no_evidence",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G21",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 200,
+      "status": "needs_more_data",
+      "max_hypotheses": 0,
+      "requires_checks": true
+    }
+  },
+  {
+    "case_id": "G-22",
+    "category": "authorization_denied",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G22",
+      "equipment_id": "P-305",
+      "plant_id": "PLANT-B",
+      "symptoms": [
+        "high_vibration"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 403
+    }
+  },
+  {
+    "case_id": "G-23",
+    "category": "authorization_denied",
+    "principal": {
+      "user": "ana@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G23",
+      "equipment_id": "M-410",
+      "plant_id": "PLANT-C",
+      "symptoms": [
+        "high_vibration"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 403
+    }
+  },
+  {
+    "case_id": "G-24",
+    "category": "authorization_denied",
+    "principal": {
+      "user": "eva@example.com",
+      "role": "technician",
+      "plants": [
+        "PLANT-B"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G24",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_vibration"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 403
+    }
+  },
+  {
+    "case_id": "G-25",
+    "category": "authorization_denied",
+    "principal": {
+      "user": "v@example.com",
+      "role": "viewer",
+      "plants": [
+        "PLANT-A"
+      ]
+    },
+    "request": {
+      "incident_id": "INC-G25",
+      "equipment_id": "P-204",
+      "plant_id": "PLANT-A",
+      "symptoms": [
+        "high_vibration"
+      ],
+      "message": "Diagnostica la falla y recomienda verificaciones"
+    },
+    "expect": {
+      "http": 403
+    }
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "attack_id": "ATK-08",
+  "kind": "action_duplication",
+  "payload": "duplicate"
+}

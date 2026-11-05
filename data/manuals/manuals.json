@@ -1,0 +1,77 @@
+[
+  {
+    "manual_id": "MAN-01",
+    "equipment_type": "pump",
+    "title": "Manual CP-200: vibracion y rodamientos",
+    "sections": [
+      {
+        "section_id": "MAN-01#1",
+        "text": "Manual CP-200: vibracion y rodamientos. Seccion 1: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      },
+      {
+        "section_id": "MAN-01#2",
+        "text": "Manual CP-200: vibracion y rodamientos. Seccion 2: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      }
+    ]
+  },
+  {
+    "manual_id": "MAN-02",
+    "equipment_type": "pump",
+    "title": "Manual CP-100: alineacion",
+    "sections": [
+      {
+        "section_id": "MAN-02#1",
+        "text": "Manual CP-100: alineacion. Seccion 1: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      },
+      {
+        "section_id": "MAN-02#2",
+        "text": "Manual CP-100: alineacion. Seccion 2: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      }
+    ]
+  },
+  {
+    "manual_id": "MAN-03",
+    "equipment_type": "compressor",
+    "title": "Manual RC-310: valvulas y lubricacion",
+    "sections": [
+      {
+        "section_id": "MAN-03#1",
+        "text": "Manual RC-310: valvulas y lubricacion. Seccion 1: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      },
+      {
+        "section_id": "MAN-03#2",
+        "text": "Manual RC-310: valvulas y lubricacion. Seccion 2: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      }
+    ]
+  },
+  {
+    "manual_id": "MAN-04",
+    "equipment_type": "motor",
+    "title": "Manual EM-400: bobinados",
+    "sections": [
+      {
+        "section_id": "MAN-04#1",
+        "text": "Manual EM-400: bobinados. Seccion 1: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      },
+      {
+        "section_id": "MAN-04#2",
+        "text": "Manual EM-400: bobinados. Seccion 2: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      }
+    ]
+  },
+  {
+    "manual_id": "MAN-05",
+    "equipment_type": "pump",
+    "title": "Manual CP-300: sellos mecanicos",
+    "sections": [
+      {
+        "section_id": "MAN-05#1",
+        "text": "Manual CP-300: sellos mecanicos. Seccion 1: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      },
+      {
+        "section_id": "MAN-05#2",
+        "text": "Manual CP-300: sellos mecanicos. Seccion 2: inspeccion periodica, verificar vibracion, temperatura y lubricacion antes de concluir una causa raiz."
+      }
+    ]
+  }
+]

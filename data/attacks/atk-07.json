@@ -1,0 +1,5 @@
+{
+  "attack_id": "ATK-07",
+  "kind": "approval_replay",
+  "payload": "replay"
+}

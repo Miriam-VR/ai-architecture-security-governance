@@ -1,0 +1,9 @@
+# cp terraform.tfvars.example terraform.tfvars   (terraform.tfvars is NOT committed; contains no secrets anyway)
+lambda_image_uri = "123456789012.dkr.ecr.us-east-1.amazonaws.com/maintenance-ai-workshop@sha256:<digest>"
+store_mode       = "supabase"
+jwt_issuer       = "https://<project-ref>.supabase.co/auth/v1"
+# jwt_jwks_url   = "https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json"   # if your project uses asymmetric signing keys
+llm_mode         = "mock"   # "openai" once OPENAI_API_KEY is in the secret
+embedding_mode   = "mock"   # must match how you ran scripts/ingest.py
+enable_ec2       = true
+alarm_email      = ""

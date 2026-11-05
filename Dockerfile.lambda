@@ -1,0 +1,13 @@
+# Lambda container image (Mangum handler). Build context = repo root.
+FROM public.ecr.aws/lambda/python:3.12
+
+COPY pyproject.toml ${LAMBDA_TASK_ROOT}/
+COPY app ${LAMBDA_TASK_ROOT}/app
+COPY handlers ${LAMBDA_TASK_ROOT}/handlers
+COPY data ${LAMBDA_TASK_ROOT}/data
+
+RUN pip install --no-cache-dir "${LAMBDA_TASK_ROOT}" --target "${LAMBDA_TASK_ROOT}" \
+    && rm -rf /root/.cache
+
+# API function handler. The SQS worker reuses this image with a different command (see Terraform).
+CMD ["handlers.lambda_api.handler"]

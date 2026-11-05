@@ -1,0 +1,47 @@
+[
+  {
+    "equipment_id": "P-204",
+    "plant_id": "PLANT-A",
+    "type": "pump",
+    "model": "CP-200 centrifugal",
+    "criticality": "high",
+    "location": "Area 2 / Bay 4",
+    "next_maintenance": "2026-12-01"
+  },
+  {
+    "equipment_id": "P-101",
+    "plant_id": "PLANT-A",
+    "type": "pump",
+    "model": "CP-100 centrifugal",
+    "criticality": "medium",
+    "location": "Area 1 / Bay 1",
+    "next_maintenance": "2026-11-20"
+  },
+  {
+    "equipment_id": "C-310",
+    "plant_id": "PLANT-A",
+    "type": "compressor",
+    "model": "RC-310 reciprocating",
+    "criticality": "high",
+    "location": "Area 3 / Bay 2",
+    "next_maintenance": "2027-01-15"
+  },
+  {
+    "equipment_id": "P-305",
+    "plant_id": "PLANT-B",
+    "type": "pump",
+    "model": "CP-300 centrifugal",
+    "criticality": "high",
+    "location": "Area 5 / Bay 3",
+    "next_maintenance": "2026-12-10"
+  },
+  {
+    "equipment_id": "M-410",
+    "plant_id": "PLANT-C",
+    "type": "motor",
+    "model": "EM-400 induction",
+    "criticality": "medium",
+    "location": "Area 7 / Bay 1",
+    "next_maintenance": "2027-02-01"
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "procedure_id": "PRC-01",
+    "equipment_type": "pump",
+    "title": "Inspeccion visual de bomba",
+    "text": "Procedimiento Inspeccion visual de bomba: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-02",
+    "equipment_type": "pump",
+    "title": "Medicion de vibracion en rodamientos",
+    "text": "Procedimiento Medicion de vibracion en rodamientos: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-03",
+    "equipment_type": "pump",
+    "title": "Alineacion laser",
+    "text": "Procedimiento Alineacion laser: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-04",
+    "equipment_type": "pump",
+    "title": "Cambio de sello mecanico",
+    "text": "Procedimiento Cambio de sello mecanico: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-05",
+    "equipment_type": "pump",
+    "title": "Analisis de aceite",
+    "text": "Procedimiento Analisis de aceite: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-06",
+    "equipment_type": "all",
+    "title": "Escalamiento a supervisor",
+    "text": "Procedimiento Escalamiento a supervisor: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-07",
+    "equipment_type": "compressor",
+    "title": "Inspeccion de compresor",
+    "text": "Procedimiento Inspeccion de compresor: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-08",
+    "equipment_type": "motor",
+    "title": "Megado de motor",
+    "text": "Procedimiento Megado de motor: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-09",
+    "equipment_type": "pump",
+    "title": "Verificacion de succion",
+    "text": "Procedimiento Verificacion de succion: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  },
+  {
+    "procedure_id": "PRC-10",
+    "equipment_type": "all",
+    "title": "Bloqueo y etiquetado (LOTO) antes de intervenir",
+    "text": "Procedimiento Bloqueo y etiquetado (LOTO) antes de intervenir: pasos manuales de verificacion; ninguna accion automatica sobre el equipo."
+  }
+]

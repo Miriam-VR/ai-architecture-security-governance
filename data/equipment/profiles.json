@@ -1,0 +1,26 @@
+[
+  {
+    "user": "ana@example.com",
+    "name": "Ana",
+    "role": "technician",
+    "plants": [
+      "PLANT-A"
+    ]
+  },
+  {
+    "user": "luis@example.com",
+    "name": "Luis",
+    "role": "supervisor",
+    "plants": [
+      "PLANT-A"
+    ]
+  },
+  {
+    "user": "root@example.com",
+    "name": "Root",
+    "role": "administrator",
+    "plants": [
+      "*"
+    ]
+  }
+]

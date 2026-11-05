@@ -1,0 +1,737 @@
+[
+  {
+    "failure_id": "FH-001",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-101",
+    "equipment_type": "pump",
+    "date": "2021-01-24",
+    "symptoms": [
+      "high_vibration",
+      "axial_vibration",
+      "high_bearing_temperature"
+    ],
+    "root_cause": "misalignment",
+    "confirmed_cause": "desalineacion bomba-motor",
+    "actions_taken": [
+      "Alineacion laser del acople",
+      "Revision de pata coja",
+      "Verificar tuberia sin tension"
+    ],
+    "downtime_hours": 11.4,
+    "repair_cost_usd": 3957,
+    "references": [
+      "MAN-02",
+      "PRC-02"
+    ]
+  },
+  {
+    "failure_id": "FH-002",
+    "plant_id": "PLANT-B",
+    "equipment_id": "P-305",
+    "equipment_type": "pump",
+    "date": "2021-11-24",
+    "symptoms": [
+      "low_discharge_pressure",
+      "noise_crackling",
+      "flow_fluctuation"
+    ],
+    "root_cause": "cavitation",
+    "confirmed_cause": "cavitacion por NPSH insuficiente",
+    "actions_taken": [
+      "Revisar nivel de succion",
+      "Limpiar filtro de succion",
+      "Verificar valvula de succion abierta"
+    ],
+    "downtime_hours": 32.3,
+    "repair_cost_usd": 1724,
+    "references": [
+      "MAN-03",
+      "PRC-03"
+    ]
+  },
+  {
+    "failure_id": "FH-003",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-204",
+    "equipment_type": "pump",
+    "date": "2025-07-02",
+    "symptoms": [
+      "fluid_leak",
+      "seal_temperature_high",
+      "low_discharge_pressure"
+    ],
+    "root_cause": "seal_leak",
+    "confirmed_cause": "fuga en sello mecanico",
+    "actions_taken": [
+      "Cambio de sello mecanico",
+      "Inspeccion de camisa del eje"
+    ],
+    "downtime_hours": 3.0,
+    "repair_cost_usd": 3882,
+    "references": [
+      "MAN-04",
+      "PRC-04"
+    ]
+  },
+  {
+    "failure_id": "FH-004",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-101",
+    "equipment_type": "pump",
+    "date": "2022-09-20",
+    "symptoms": [
+      "low_flow",
+      "low_discharge_pressure",
+      "high_vibration"
+    ],
+    "root_cause": "impeller_damage",
+    "confirmed_cause": "dano en impulsor",
+    "actions_taken": [
+      "Inspeccion y reemplazo de impulsor",
+      "Balanceo del rotor"
+    ],
+    "downtime_hours": 2.9,
+    "repair_cost_usd": 3557,
+    "references": [
+      "MAN-05",
+      "PRC-05"
+    ]
+  },
+  {
+    "failure_id": "FH-005",
+    "plant_id": "PLANT-B",
+    "equipment_id": "P-305",
+    "equipment_type": "pump",
+    "date": "2025-07-08",
+    "symptoms": [
+      "high_vibration",
+      "high_bearing_temperature",
+      "low_discharge_pressure"
+    ],
+    "root_cause": "bearing_wear",
+    "confirmed_cause": "desgaste de rodamiento",
+    "actions_taken": [
+      "Reemplazo de rodamiento lado acople",
+      "Medicion de vibracion post-reparacion",
+      "Revision de lubricacion"
+    ],
+    "downtime_hours": 17.3,
+    "repair_cost_usd": 4857,
+    "references": [
+      "MAN-01",
+      "PRC-06"
+    ]
+  },
+  {
+    "failure_id": "FH-006",
+    "plant_id": "PLANT-A",
+    "equipment_id": "C-310",
+    "equipment_type": "compressor",
+    "date": "2021-03-23",
+    "symptoms": [
+      "high_discharge_temperature",
+      "low_flow",
+      "noise_knocking"
+    ],
+    "root_cause": "valve_failure",
+    "confirmed_cause": "falla de valvula de compresion",
+    "actions_taken": [
+      "Reemplazo de valvula",
+      "Inspeccion de asientos"
+    ],
+    "downtime_hours": 16.4,
+    "repair_cost_usd": 4852,
+    "references": [
+      "MAN-02",
+      "PRC-07"
+    ]
+  },
+  {
+    "failure_id": "FH-007",
+    "plant_id": "PLANT-C",
+    "equipment_id": "M-410",
+    "equipment_type": "motor",
+    "date": "2022-04-25",
+    "symptoms": [
+      "high_motor_temperature",
+      "high_current",
+      "motor_trip"
+    ],
+    "root_cause": "winding_overheat",
+    "confirmed_cause": "sobrecalentamiento de bobinado",
+    "actions_taken": [
+      "Megado de aislamiento",
+      "Revision de ventilacion"
+    ],
+    "downtime_hours": 13.4,
+    "repair_cost_usd": 1819,
+    "references": [
+      "MAN-03",
+      "PRC-08"
+    ]
+  },
+  {
+    "failure_id": "FH-008",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-204",
+    "equipment_type": "pump",
+    "date": "2024-02-12",
+    "symptoms": [
+      "high_bearing_temperature",
+      "oil_level_low",
+      "noise_grinding"
+    ],
+    "root_cause": "lubrication_failure",
+    "confirmed_cause": "falla de lubricacion",
+    "actions_taken": [
+      "Reposicion de aceite",
+      "Analisis de aceite",
+      "Revisar sello de caja de rodamientos"
+    ],
+    "downtime_hours": 30.8,
+    "repair_cost_usd": 4633,
+    "references": [
+      "MAN-04",
+      "PRC-09"
+    ]
+  },
+  {
+    "failure_id": "FH-009",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-101",
+    "equipment_type": "pump",
+    "date": "2024-09-04",
+    "symptoms": [
+      "low_discharge_pressure",
+      "noise_crackling",
+      "flow_fluctuation",
+      "high_vibration"
+    ],
+    "root_cause": "cavitation",
+    "confirmed_cause": "cavitacion por NPSH insuficiente",
+    "actions_taken": [
+      "Revisar nivel de succion",
+      "Limpiar filtro de succion",
+      "Verificar valvula de succion abierta"
+    ],
+    "downtime_hours": 35.1,
+    "repair_cost_usd": 6501,
+    "references": [
+      "MAN-05",
+      "PRC-10"
+    ]
+  },
+  {
+    "failure_id": "FH-010",
+    "plant_id": "PLANT-B",
+    "equipment_id": "P-305",
+    "equipment_type": "pump",
+    "date": "2021-09-10",
+    "symptoms": [
+      "high_vibration",
+      "axial_vibration",
+      "high_bearing_temperature"
+    ],
+    "root_cause": "misalignment",
+    "confirmed_cause": "desalineacion bomba-motor",
+    "actions_taken": [
+      "Alineacion laser del acople",
+      "Revision de pata coja",
+      "Verificar tuberia sin tension"
+    ],
+    "downtime_hours": 30.2,
+    "repair_cost_usd": 6225,
+    "references": [
+      "MAN-01",
+      "PRC-01"
+    ]
+  },
+  {
+    "failure_id": "FH-011",
+    "plant_id": "PLANT-A",
+    "equipment_id": "C-310",
+    "equipment_type": "compressor",
+    "date": "2025-04-23",
+    "symptoms": [
+      "flow_fluctuation",
+      "pressure_oscillation",
+      "high_vibration"
+    ],
+    "root_cause": "surge",
+    "confirmed_cause": "surge por caudal bajo",
+    "actions_taken": [
+      "Ajustar recirculacion",
+      "Revisar sensor de flujo"
+    ],
+    "downtime_hours": 4.4,
+    "repair_cost_usd": 4033,
+    "references": [
+      "MAN-02",
+      "PRC-02"
+    ]
+  },
+  {
+    "failure_id": "FH-012",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-204",
+    "equipment_type": "pump",
+    "date": "2023-02-28",
+    "symptoms": [
+      "high_vibration",
+      "high_bearing_temperature",
+      "low_discharge_pressure"
+    ],
+    "root_cause": "bearing_wear",
+    "confirmed_cause": "desgaste de rodamiento",
+    "actions_taken": [
+      "Reemplazo de rodamiento lado acople",
+      "Medicion de vibracion post-reparacion",
+      "Revision de lubricacion"
+    ],
+    "downtime_hours": 9.9,
+    "repair_cost_usd": 1954,
+    "references": [
+      "MAN-03",
+      "PRC-03"
+    ]
+  },
+  {
+    "failure_id": "FH-013",
+    "plant_id": "PLANT-C",
+    "equipment_id": "M-410",
+    "equipment_type": "motor",
+    "date": "2024-05-15",
+    "symptoms": [
+      "high_vibration",
+      "high_bearing_temperature",
+      "noise_grinding"
+    ],
+    "root_cause": "bearing_wear",
+    "confirmed_cause": "desgaste de rodamiento del motor",
+    "actions_taken": [
+      "Reemplazo de rodamientos",
+      "Re-engrase programado"
+    ],
+    "downtime_hours": 23.6,
+    "repair_cost_usd": 6277,
+    "references": [
+      "MAN-04",
+      "PRC-04"
+    ]
+  },
+  {
+    "failure_id": "FH-014",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-204",
+    "equipment_type": "pump",
+    "date": "2022-06-12",
+    "symptoms": [
+      "high_vibration",
+      "axial_vibration",
+      "high_bearing_temperature"
+    ],
+    "root_cause": "misalignment",
+    "confirmed_cause": "desalineacion bomba-motor",
+    "actions_taken": [
+      "Alineacion laser del acople",
+      "Revision de pata coja",
+      "Verificar tuberia sin tension"
+    ],
+    "downtime_hours": 9.1,
+    "repair_cost_usd": 4674,
+    "references": [
+      "MAN-05",
+      "PRC-05"
+    ]
+  },
+  {
+    "failure_id": "FH-015",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-101",
+    "equipment_type": "pump",
+    "date": "2021-10-21",
+    "symptoms": [
+      "fluid_leak",
+      "seal_temperature_high",
+      "low_discharge_pressure"
+    ],
+    "root_cause": "seal_leak",
+    "confirmed_cause": "fuga en sello mecanico",
+    "actions_taken": [
+      "Cambio de sello mecanico",
+      "Inspeccion de camisa del eje"
+    ],
+    "downtime_hours": 7.8,
+    "repair_cost_usd": 4310,
+    "references": [
+      "MAN-01",
+      "PRC-06"
+    ]
+  },
+  {
+    "failure_id": "FH-016",
+    "plant_id": "PLANT-B",
+    "equipment_id": "P-305",
+    "equipment_type": "pump",
+    "date": "2022-08-13",
+    "symptoms": [
+      "low_flow",
+      "low_discharge_pressure",
+      "high_vibration"
+    ],
+    "root_cause": "impeller_damage",
+    "confirmed_cause": "dano en impulsor",
+    "actions_taken": [
+      "Inspeccion y reemplazo de impulsor",
+      "Balanceo del rotor"
+    ],
+    "downtime_hours": 11.2,
+    "repair_cost_usd": 3898,
+    "references": [
+      "MAN-02",
+      "PRC-07"
+    ]
+  },
+  {
+    "failure_id": "FH-017",
+    "plant_id": "PLANT-A",
+    "equipment_id": "C-310",
+    "equipment_type": "compressor",
+    "date": "2023-01-08",
+    "symptoms": [
+      "oil_pressure_low",
+      "high_bearing_temperature",
+      "noise_grinding"
+    ],
+    "root_cause": "oil_contamination",
+    "confirmed_cause": "contaminacion de aceite",
+    "actions_taken": [
+      "Cambio de aceite y filtro",
+      "Analisis de particulas"
+    ],
+    "downtime_hours": 29.9,
+    "repair_cost_usd": 5468,
+    "references": [
+      "MAN-03",
+      "PRC-08"
+    ]
+  },
+  {
+    "failure_id": "FH-018",
+    "plant_id": "PLANT-C",
+    "equipment_id": "M-410",
+    "equipment_type": "motor",
+    "date": "2024-05-03",
+    "symptoms": [
+      "high_current",
+      "high_motor_temperature",
+      "vibration_2x_line"
+    ],
+    "root_cause": "phase_imbalance",
+    "confirmed_cause": "desbalance de fases",
+    "actions_taken": [
+      "Revisar tension de alimentacion",
+      "Revisar conexiones de bornera"
+    ],
+    "downtime_hours": 9.2,
+    "repair_cost_usd": 5455,
+    "references": [
+      "MAN-04",
+      "PRC-09"
+    ]
+  },
+  {
+    "failure_id": "FH-019",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-101",
+    "equipment_type": "pump",
+    "date": "2022-11-16",
+    "symptoms": [
+      "high_vibration",
+      "high_bearing_temperature",
+      "low_discharge_pressure"
+    ],
+    "root_cause": "bearing_wear",
+    "confirmed_cause": "desgaste de rodamiento",
+    "actions_taken": [
+      "Reemplazo de rodamiento lado acople",
+      "Medicion de vibracion post-reparacion",
+      "Revision de lubricacion"
+    ],
+    "downtime_hours": 15.5,
+    "repair_cost_usd": 7817,
+    "references": [
+      "MAN-05",
+      "PRC-10"
+    ]
+  },
+  {
+    "failure_id": "FH-020",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-204",
+    "equipment_type": "pump",
+    "date": "2022-04-24",
+    "symptoms": [
+      "low_discharge_pressure",
+      "noise_crackling",
+      "flow_fluctuation"
+    ],
+    "root_cause": "cavitation",
+    "confirmed_cause": "cavitacion por NPSH insuficiente",
+    "actions_taken": [
+      "Revisar nivel de succion",
+      "Limpiar filtro de succion",
+      "Verificar valvula de succion abierta"
+    ],
+    "downtime_hours": 21.1,
+    "repair_cost_usd": 4604,
+    "references": [
+      "MAN-01",
+      "PRC-01"
+    ]
+  },
+  {
+    "failure_id": "FH-021",
+    "plant_id": "PLANT-B",
+    "equipment_id": "P-305",
+    "equipment_type": "pump",
+    "date": "2025-07-19",
+    "symptoms": [
+      "high_bearing_temperature",
+      "oil_level_low",
+      "noise_grinding"
+    ],
+    "root_cause": "lubrication_failure",
+    "confirmed_cause": "falla de lubricacion",
+    "actions_taken": [
+      "Reposicion de aceite",
+      "Analisis de aceite",
+      "Revisar sello de caja de rodamientos"
+    ],
+    "downtime_hours": 15.6,
+    "repair_cost_usd": 3893,
+    "references": [
+      "MAN-02",
+      "PRC-02"
+    ]
+  },
+  {
+    "failure_id": "FH-022",
+    "plant_id": "PLANT-A",
+    "equipment_id": "C-310",
+    "equipment_type": "compressor",
+    "date": "2022-09-16",
+    "symptoms": [
+      "high_discharge_temperature",
+      "low_flow",
+      "noise_knocking"
+    ],
+    "root_cause": "valve_failure",
+    "confirmed_cause": "falla de valvula de compresion",
+    "actions_taken": [
+      "Reemplazo de valvula",
+      "Inspeccion de asientos"
+    ],
+    "downtime_hours": 5.1,
+    "repair_cost_usd": 1071,
+    "references": [
+      "MAN-03",
+      "PRC-03"
+    ]
+  },
+  {
+    "failure_id": "FH-023",
+    "plant_id": "PLANT-C",
+    "equipment_id": "M-410",
+    "equipment_type": "motor",
+    "date": "2021-03-21",
+    "symptoms": [
+      "high_motor_temperature",
+      "high_current",
+      "motor_trip"
+    ],
+    "root_cause": "winding_overheat",
+    "confirmed_cause": "sobrecalentamiento de bobinado",
+    "actions_taken": [
+      "Megado de aislamiento",
+      "Revision de ventilacion"
+    ],
+    "downtime_hours": 7.4,
+    "repair_cost_usd": 7216,
+    "references": [
+      "MAN-04",
+      "PRC-04"
+    ]
+  },
+  {
+    "failure_id": "FH-024",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-101",
+    "equipment_type": "pump",
+    "date": "2025-02-13",
+    "symptoms": [
+      "high_bearing_temperature",
+      "oil_level_low",
+      "noise_grinding"
+    ],
+    "root_cause": "lubrication_failure",
+    "confirmed_cause": "falla de lubricacion",
+    "actions_taken": [
+      "Reposicion de aceite",
+      "Analisis de aceite",
+      "Revisar sello de caja de rodamientos"
+    ],
+    "downtime_hours": 15.0,
+    "repair_cost_usd": 7968,
+    "references": [
+      "MAN-05",
+      "PRC-05"
+    ]
+  },
+  {
+    "failure_id": "FH-025",
+    "plant_id": "PLANT-B",
+    "equipment_id": "P-305",
+    "equipment_type": "pump",
+    "date": "2025-05-18",
+    "symptoms": [
+      "fluid_leak",
+      "seal_temperature_high",
+      "low_discharge_pressure"
+    ],
+    "root_cause": "seal_leak",
+    "confirmed_cause": "fuga en sello mecanico",
+    "actions_taken": [
+      "Cambio de sello mecanico",
+      "Inspeccion de camisa del eje"
+    ],
+    "downtime_hours": 31.3,
+    "repair_cost_usd": 488,
+    "references": [
+      "MAN-01",
+      "PRC-06"
+    ]
+  },
+  {
+    "failure_id": "FH-026",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-204",
+    "equipment_type": "pump",
+    "date": "2021-11-18",
+    "symptoms": [
+      "low_flow",
+      "low_discharge_pressure",
+      "high_vibration"
+    ],
+    "root_cause": "impeller_damage",
+    "confirmed_cause": "dano en impulsor",
+    "actions_taken": [
+      "Inspeccion y reemplazo de impulsor",
+      "Balanceo del rotor"
+    ],
+    "downtime_hours": 27.5,
+    "repair_cost_usd": 5873,
+    "references": [
+      "MAN-02",
+      "PRC-07"
+    ]
+  },
+  {
+    "failure_id": "FH-027",
+    "plant_id": "PLANT-A",
+    "equipment_id": "C-310",
+    "equipment_type": "compressor",
+    "date": "2021-05-14",
+    "symptoms": [
+      "flow_fluctuation",
+      "pressure_oscillation",
+      "high_vibration"
+    ],
+    "root_cause": "surge",
+    "confirmed_cause": "surge por caudal bajo",
+    "actions_taken": [
+      "Ajustar recirculacion",
+      "Revisar sensor de flujo"
+    ],
+    "downtime_hours": 7.4,
+    "repair_cost_usd": 353,
+    "references": [
+      "MAN-03",
+      "PRC-08"
+    ]
+  },
+  {
+    "failure_id": "FH-028",
+    "plant_id": "PLANT-C",
+    "equipment_id": "M-410",
+    "equipment_type": "motor",
+    "date": "2023-09-25",
+    "symptoms": [
+      "high_vibration",
+      "high_bearing_temperature",
+      "noise_grinding"
+    ],
+    "root_cause": "bearing_wear",
+    "confirmed_cause": "desgaste de rodamiento del motor",
+    "actions_taken": [
+      "Reemplazo de rodamientos",
+      "Re-engrase programado"
+    ],
+    "downtime_hours": 8.1,
+    "repair_cost_usd": 2043,
+    "references": [
+      "MAN-04",
+      "PRC-09"
+    ]
+  },
+  {
+    "failure_id": "FH-029",
+    "plant_id": "PLANT-A",
+    "equipment_id": "P-101",
+    "equipment_type": "pump",
+    "date": "2023-11-17",
+    "symptoms": [
+      "high_vibration",
+      "axial_vibration",
+      "high_bearing_temperature"
+    ],
+    "root_cause": "misalignment",
+    "confirmed_cause": "desalineacion bomba-motor",
+    "actions_taken": [
+      "Alineacion laser del acople",
+      "Revision de pata coja",
+      "Verificar tuberia sin tension"
+    ],
+    "downtime_hours": 22.7,
+    "repair_cost_usd": 2804,
+    "references": [
+      "MAN-05",
+      "PRC-10"
+    ]
+  },
+  {
+    "failure_id": "FH-030",
+    "plant_id": "PLANT-B",
+    "equipment_id": "P-305",
+    "equipment_type": "pump",
+    "date": "2023-03-18",
+    "symptoms": [
+      "high_vibration",
+      "high_bearing_temperature",
+      "low_discharge_pressure"
+    ],
+    "root_cause": "bearing_wear",
+    "confirmed_cause": "desgaste de rodamiento",
+    "actions_taken": [
+      "Reemplazo de rodamiento lado acople",
+      "Medicion de vibracion post-reparacion",
+      "Revision de lubricacion"
+    ],
+    "downtime_hours": 34.4,
+    "repair_cost_usd": 8989,
+    "references": [
+      "MAN-01",
+      "PRC-01"
+    ]
+  }
+]

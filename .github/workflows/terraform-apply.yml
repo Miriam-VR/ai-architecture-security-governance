@@ -1,0 +1,91 @@
+name: Terraform apply
+
+# Infrastructure changes. (The plan job runs from main with the read-only role; apply needs the protected Environment.)
+# Infrastructure changes. NEVER automatic: plan is shown, then a human must approve the "<env>-infra" GitHub Environment.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [dev, workshop]
+        default: dev
+      action:
+        description: plan = only show the plan; apply = plan, wait for approval, apply
+        type: choice
+        options: [plan, apply]
+        default: plan
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-${{ inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  TF_DIR: infrastructure/terraform/environments/${{ inputs.environment }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/maintenance-ai-gha-plan
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: plan
+        working-directory: ${{ env.TF_DIR }}
+        env:
+          TF_VAR_lambda_image_uri: ${{ inputs.environment == 'dev' && vars.LAMBDA_IMAGE_URI_DEV || vars.LAMBDA_IMAGE_URI_WORKSHOP }}
+          TF_VAR_jwt_issuer: ${{ vars.JWT_ISSUER }}
+          TF_VAR_jwt_jwks_url: ${{ vars.JWT_JWKS_URL }}
+          TF_VAR_llm_mode: ${{ vars.LLM_MODE || 'mock' }}
+          TF_VAR_embedding_mode: ${{ vars.EMBEDDING_MODE || 'mock' }}
+          TF_VAR_enable_ec2: ${{ vars.ENABLE_EC2 || 'true' }}
+        run: |
+          terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" -backend-config="key=${{ inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ vars.AWS_REGION }}" -backend-config="encrypt=true" -backend-config="use_lockfile=true"
+          terraform plan -input=false -no-color -out=tfplan | tee plan.txt
+          { echo '## Terraform plan'; echo '```'; tail -n 80 plan.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    if: ${{ inputs.action == 'apply' }}
+    needs: plan
+    runs-on: ubuntu-latest
+    # "<env>-infra" must have Required reviewers: the apply role can only be assumed from this environment.
+    environment: ${{ inputs.environment }}-infra
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/maintenance-ai-gha-apply
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: re-plan with the apply role and apply exactly that plan
+        working-directory: ${{ env.TF_DIR }}
+        env:
+          TF_VAR_lambda_image_uri: ${{ inputs.environment == 'dev' && vars.LAMBDA_IMAGE_URI_DEV || vars.LAMBDA_IMAGE_URI_WORKSHOP }}
+          TF_VAR_jwt_issuer: ${{ vars.JWT_ISSUER }}
+          TF_VAR_jwt_jwks_url: ${{ vars.JWT_JWKS_URL }}
+          TF_VAR_llm_mode: ${{ vars.LLM_MODE || 'mock' }}
+          TF_VAR_embedding_mode: ${{ vars.EMBEDDING_MODE || 'mock' }}
+          TF_VAR_enable_ec2: ${{ vars.ENABLE_EC2 || 'true' }}
+        run: |
+          terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" -backend-config="key=${{ inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ vars.AWS_REGION }}" -backend-config="encrypt=true" -backend-config="use_lockfile=true"
+          terraform plan -input=false -no-color -out=tfplan
+          terraform apply -input=false -no-color tfplan

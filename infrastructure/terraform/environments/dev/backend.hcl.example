@@ -1,0 +1,6 @@
+# cp backend.hcl.example backend.hcl   (backend.hcl is NOT committed)
+bucket       = "maintenance-ai-tfstate-<ACCOUNT_ID>"
+key          = "dev/terraform.tfstate"
+region       = "us-east-1"
+encrypt      = true
+use_lockfile = true # S3-native locking (Terraform >= 1.10), no DynamoDB table needed

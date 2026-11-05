@@ -1,0 +1,14 @@
+[
+  {
+    "plant_id": "PLANT-A",
+    "name": "Planta Norte"
+  },
+  {
+    "plant_id": "PLANT-B",
+    "name": "Planta Sur"
+  },
+  {
+    "plant_id": "PLANT-C",
+    "name": "Planta Este"
+  }
+]

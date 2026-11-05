@@ -1,0 +1,11 @@
+output "api_url" { value = module.api_gateway.invoke_url }
+output "rest_api_id" { value = module.api_gateway.rest_api_id }
+output "usage_plan_id" { value = module.api_gateway.usage_plan_id }
+output "ecr_repository_url" { value = module.ecr.repository_url }
+output "ecr_repository_name" { value = module.ecr.repository_name }
+output "lambda_api_name" { value = module.lambda_api.function_name }
+output "lambda_worker_name" { value = module.lambda_worker.function_name }
+output "queue_url" { value = module.sqs.queue_url }
+output "app_secret_id" { value = module.secrets.secret_name }
+output "ec2_instance_id" { value = var.enable_ec2 ? module.ec2[0].instance_id : "" }
+output "ec2_public_dns" { value = var.enable_ec2 ? module.ec2[0].public_dns : "" }

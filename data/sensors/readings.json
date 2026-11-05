@@ -1,0 +1,182 @@
+[
+  {
+    "reading_id": "SR-001",
+    "equipment_id": "P-204",
+    "sensor": "bearing_temperature",
+    "value": 86.0,
+    "unit": "C",
+    "quality": "good",
+    "timestamp": "2026-11-04T12:00:00Z"
+  },
+  {
+    "reading_id": "SR-002",
+    "equipment_id": "P-204",
+    "sensor": "vibration",
+    "value": 8.4,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T12:00:00Z"
+  },
+  {
+    "reading_id": "SR-003",
+    "equipment_id": "P-204",
+    "sensor": "discharge_pressure",
+    "value": 2.8,
+    "unit": "bar",
+    "quality": "good",
+    "timestamp": "2026-11-04T12:00:00Z"
+  },
+  {
+    "reading_id": "SR-004",
+    "equipment_id": "P-101",
+    "sensor": "bearing_temperature",
+    "value": 62.0,
+    "unit": "C",
+    "quality": "good",
+    "timestamp": "2026-11-04T09:00:00Z"
+  },
+  {
+    "reading_id": "SR-005",
+    "equipment_id": "P-101",
+    "sensor": "vibration",
+    "value": 2.1,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T08:00:00Z"
+  },
+  {
+    "reading_id": "SR-006",
+    "equipment_id": "P-101",
+    "sensor": "discharge_pressure",
+    "value": 4.2,
+    "unit": "bar",
+    "quality": "good",
+    "timestamp": "2026-11-04T07:00:00Z"
+  },
+  {
+    "reading_id": "SR-007",
+    "equipment_id": "P-305",
+    "sensor": "bearing_temperature",
+    "value": 65.0,
+    "unit": "C",
+    "quality": "good",
+    "timestamp": "2026-11-04T06:00:00Z"
+  },
+  {
+    "reading_id": "SR-008",
+    "equipment_id": "P-305",
+    "sensor": "vibration",
+    "value": 2.4,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T05:00:00Z"
+  },
+  {
+    "reading_id": "SR-009",
+    "equipment_id": "P-305",
+    "sensor": "discharge_pressure",
+    "value": 4.0,
+    "unit": "bar",
+    "quality": "good",
+    "timestamp": "2026-11-04T04:00:00Z"
+  },
+  {
+    "reading_id": "SR-010",
+    "equipment_id": "C-310",
+    "sensor": "bearing_temperature",
+    "value": 78.0,
+    "unit": "C",
+    "quality": "good",
+    "timestamp": "2026-11-04T03:00:00Z"
+  },
+  {
+    "reading_id": "SR-011",
+    "equipment_id": "C-310",
+    "sensor": "vibration",
+    "value": 3.0,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T02:00:00Z"
+  },
+  {
+    "reading_id": "SR-012",
+    "equipment_id": "C-310",
+    "sensor": "discharge_pressure",
+    "value": 8.5,
+    "unit": "bar",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  },
+  {
+    "reading_id": "SR-013",
+    "equipment_id": "M-410",
+    "sensor": "bearing_temperature",
+    "value": 70.0,
+    "unit": "C",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  },
+  {
+    "reading_id": "SR-014",
+    "equipment_id": "M-410",
+    "sensor": "vibration",
+    "value": 2.0,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  },
+  {
+    "reading_id": "SR-015",
+    "equipment_id": "P-204",
+    "sensor": "vibration",
+    "value": 8.1,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  },
+  {
+    "reading_id": "SR-016",
+    "equipment_id": "P-204",
+    "sensor": "vibration",
+    "value": 7.8,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  },
+  {
+    "reading_id": "SR-017",
+    "equipment_id": "P-204",
+    "sensor": "vibration",
+    "value": 7.5,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  },
+  {
+    "reading_id": "SR-018",
+    "equipment_id": "P-204",
+    "sensor": "vibration",
+    "value": 7.2,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  },
+  {
+    "reading_id": "SR-019",
+    "equipment_id": "P-204",
+    "sensor": "vibration",
+    "value": 6.9,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  },
+  {
+    "reading_id": "SR-020",
+    "equipment_id": "P-204",
+    "sensor": "vibration",
+    "value": 6.6,
+    "unit": "mm/s",
+    "quality": "good",
+    "timestamp": "2026-11-04T01:00:00Z"
+  }
+]
