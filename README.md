@@ -147,7 +147,8 @@ Si prefieres no escribir `.venv/bin/` cada vez, activa el entorno: `source .venv
 
 ### Seed (datos sintéticos)
 ```bash
-.venv/bin/python scripts/generate_dataset.py && .venv/bin/python scripts/generate_eval_cases.py
+.venv/bin/python scripts/generate_dataset.py && 
+.venv/bin/python scripts/generate_eval_cases.py
 .venv/bin/python scripts/ingest.py                      # embeddings -> store configurado
 DATABASE_URL=... .venv/bin/python scripts/apply_migrations.py --seed   # solo STORE_MODE=supabase
 
