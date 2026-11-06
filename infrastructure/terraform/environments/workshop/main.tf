@@ -84,7 +84,7 @@ module "lambda_worker" {
   command                        = ["handlers.lambda_worker.handler"]
   memory_size                    = 512
   timeout                        = 30
-  reserved_concurrent_executions = 2
+  reserved_concurrent_executions = var.worker_reserved_concurrency
   environment_variables = merge(local.app_config, {
     APP_ENV           = var.environment
     SECRETS_BACKEND   = "aws"

@@ -59,6 +59,11 @@ variable "api_reserved_concurrency" {
   default     = 5
   description = "Caps simultaneous Lambda containers => caps Supabase DB connections. -1 = unreserved."
 }
+variable "worker_reserved_concurrency" {
+  type        = number
+  default     = 2
+  description = "Reserved concurrency for the SQS worker Lambda. -1 = unreserved (needed on new accounts with a 10-execution limit)."
+}
 variable "secret_recovery_window_days" {
   type    = number
   default = 0 # delete immediately on destroy so the workshop can be re-created with the same name
